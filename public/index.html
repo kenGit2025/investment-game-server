@@ -716,7 +716,6 @@
                     <div class="project-card ${p.type} ${invested ? 'invested' : ''}" onclick="${isUnknown ? '' : 'clickProject(' + p.id + ')'}">
                         ${invested ? '<span class="invested-tag">✓ 已投资</span>' : ''}
                         <div class="project-top">
-                            <div class="project-icon">${p.icon}</div>
                             <div class="project-meta">
                                 <div class="project-name">${p.name}${linkHtml}</div>
                                 <span class="project-type ${p.type}">${typeLabels[p.type]}</span>
