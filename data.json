@@ -5,7 +5,7 @@
       "nickName": "ken",
       "avatarEmoji": "🐺",
       "avatarBg": "linear-gradient(135deg, #34495e, #2c3e50)",
-      "innovationCoin": 250,
+      "innovationCoin": 110,
       "platformCoin": 400,
       "createdAt": "2026-01-30T16:28:47.293Z"
     }
@@ -73,7 +73,14 @@
       "icon": "⚡",
       "desc": "AI 驱动效率提升计划",
       "link": "https://bytedance.larkoffice.com/wiki/GHCXw2VIZiFSPykeLNuclI9Hnxd",
-      "investors": []
+      "investors": [
+        {
+          "username": "ken",
+          "nickName": "ken",
+          "avatarEmoji": "🐺",
+          "avatarBg": "linear-gradient(135deg, #34495e, #2c3e50)"
+        }
+      ]
     },
     {
       "id": 6,
