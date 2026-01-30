@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投资大亨 - Investment Tycoon</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .page { display: none; min-height: 100vh; }
+        .page.active { display: flex; }
+
+        /* ===== 登录页 ===== */
+        .login-page {
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-box {
+            width: 400px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 24px;
+            padding: 50px 40px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .login-logo {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, rgba(243,156,18,0.2), rgba(231,76,60,0.2));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            border: 3px solid rgba(243,156,18,0.5);
+            font-size: 50px;
+        }
+
+        .login-title {
+            font-size: 36px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #f39c12, #e74c3c, #9b59b6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            font-size: 14px;
+            color: #8892b0;
+            letter-spacing: 2px;
+            margin-bottom: 40px;
+        }
+
+        .avatar-area { margin-bottom: 30px; }
+
+        .avatar-display {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 45px;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+
+        .avatar-hint { font-size: 13px; color: #8892b0; margin-bottom: 10px; }
+
+        .change-avatar-btn {
+            padding: 6px 16px;
+            background: transparent;
+            border: 1px solid rgba(52,152,219,0.5);
+            border-radius: 15px;
+            color: #3498db;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .change-avatar-btn:hover { background: rgba(52,152,219,0.2); }
+
+        .input-field {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            font-size: 16px;
+            color: #fff;
+            outline: none;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .input-field:focus { border-color: #f39c12; }
+        .input-field::placeholder { color: #666; }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .login-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(243,156,18,0.4);
+        }
+
+        .login-btn:disabled { background: rgba(255,255,255,0.1); color: #666; cursor: not-allowed; }
+
+        .login-tip { margin-top: 20px; font-size: 12px; color: #666; }
+
+        .online-count {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            color: #8892b0;
+        }
+
+        .online-count span { color: #2ecc71; font-weight: bold; }
+
+        /* ===== 游戏页 ===== */
+        .game-page { flex-direction: column; }
+
+        .header {
+            background: rgba(0,0,0,0.3);
+            padding: 16px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand-icon { font-size: 28px; }
+
+        .brand-name {
+            font-size: 22px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #f39c12, #e74c3c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .header-right { display: flex; align-items: center; gap: 25px; }
+        .coins-display { display: flex; gap: 12px; }
+
+        .coin-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .coin-badge.innovation { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .coin-badge.basic { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 14px 6px 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 25px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .user-name { font-size: 14px; }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #999;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover { background: rgba(231,76,60,0.2); border-color: #e74c3c; color: #e74c3c; }
+
+        .main { flex: 1; padding: 30px; overflow-y: auto; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section { margin-bottom: 30px; }
+        .section-title { font-size: 18px; font-weight: bold; margin-bottom: 16px; color: #ecf0f1; }
+
+        .investors-list { display: flex; gap: 12px; flex-wrap: wrap; }
+
+        .investor-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .investor-chip-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .investor-chip-name { font-size: 13px; color: #bdc3c7; }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+
+        .project-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 24px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .project-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.3); }
+        .project-card.innovation { border-color: rgba(155,89,182,0.3); }
+        .project-card.innovation:hover { border-color: #9b59b6; }
+        .project-card.basic { border-color: rgba(46,204,113,0.3); }
+        .project-card.basic:hover { border-color: #2ecc71; }
+        .project-card.invested { background: rgba(243,156,18,0.08); border-color: rgba(243,156,18,0.5); }
+
+        .invested-tag {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            padding: 4px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .project-top { display: flex; gap: 16px; margin-bottom: 14px; }
+        .project-icon { font-size: 44px; }
+        .project-meta { flex: 1; }
+        .project-name { font-size: 18px; font-weight: bold; margin-bottom: 6px; }
+
+        .project-type {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .project-type.innovation { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .project-type.basic { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        .project-desc { font-size: 13px; color: #8892b0; line-height: 1.5; margin-bottom: 14px; }
+        .project-price { font-size: 20px; font-weight: bold; margin-bottom: 16px; }
+        .project-price.innovation { color: #9b59b6; }
+        .project-price.basic { color: #2ecc71; }
+
+        .project-investors {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 14px;
+            margin-bottom: 16px;
+        }
+
+        .project-investors-label { font-size: 12px; color: #8892b0; margin-bottom: 10px; }
+        .project-investors-list { display: flex; flex-wrap: wrap; gap: 6px; }
+
+        .mini-investor {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .mini-investor.me {
+            background: linear-gradient(135deg, rgba(243,156,18,0.25), rgba(230,126,34,0.25));
+            border: 1px solid rgba(243,156,18,0.4);
+        }
+
+        .mini-avatar {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        .no-investor-text { font-size: 12px; color: #666; font-style: italic; }
+        .project-action { text-align: center; }
+
+        .action-btn {
+            display: inline-block;
+            padding: 12px 40px;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .action-btn.invest-innovation { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
+        .action-btn.invest-innovation:hover { box-shadow: 0 5px 20px rgba(155,89,182,0.4); }
+        .action-btn.invest-basic { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; }
+        .action-btn.invest-basic:hover { box-shadow: 0 5px 20px rgba(46,204,113,0.4); }
+        .action-btn.cancel { background: rgba(255,255,255,0.1); color: #aaa; border: 1px solid rgba(255,255,255,0.15); }
+        .action-btn.cancel:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .action-btn.disabled { background: rgba(255,255,255,0.05); color: #555; cursor: not-allowed; }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.3s;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.info { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .toast.warning { background: linear-gradient(135deg, #f39c12, #e67e22); }
+        .toast.error { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+
+        .loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .loading.show { display: flex; }
+        .loading-spinner { font-size: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 600px) {
+            .login-box { width: 90%; padding: 40px 25px; }
+            .header { flex-direction: column; gap: 15px; padding: 15px 20px; }
+            .header-right { flex-wrap: wrap; justify-content: center; }
+            .projects-grid { grid-template-columns: 1fr; }
+            .main { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录页 -->
+    <div id="loginPage" class="page login-page active">
+        <div class="login-box">
+            <div class="login-logo">💰</div>
+            <h1 class="login-title">投资大亨</h1>
+            <p class="login-subtitle">INVESTMENT TYCOON</p>
+
+            <div class="avatar-area">
+                <div class="avatar-display" id="avatarPreview"></div>
+                <p class="avatar-hint">您的专属头像</p>
+                <button class="change-avatar-btn" onclick="refreshAvatar()">🎲 换一个</button>
+            </div>
+
+            <input type="text" class="input-field" id="usernameInput" placeholder="请输入用户名" maxlength="12" oninput="checkInput()">
+            <button class="login-btn" id="loginBtn" disabled onclick="login()">登录 / 注册</button>
+            <p class="login-tip">首次输入用户名即自动注册，再次输入相同用户名可恢复数据</p>
+
+            <div class="online-count">
+                已有 <span id="userCount">0</span> 位投资人参与
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏页 -->
+    <div id="gamePage" class="page game-page">
+        <header class="header">
+            <div class="brand">
+                <span class="brand-icon">💰</span>
+                <span class="brand-name">投资大亨</span>
+            </div>
+            <div class="header-right">
+                <div class="coins-display">
+                    <div class="coin-badge innovation">
+                        <span>💎</span>
+                        <span id="innovationCoin">500</span>
+                    </div>
+                    <div class="coin-badge basic">
+                        <span>🪙</span>
+                        <span id="basicCoin">400</span>
+                    </div>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar" id="headerAvatar"></div>
+                    <span class="user-name" id="headerName"></span>
+                </div>
+                <button class="logout-btn" onclick="logout()">退出</button>
+            </div>
+        </header>
+
+        <main class="main">
+            <div class="container">
+                <section class="section" id="othersSection" style="display:none;">
+                    <h2 class="section-title">👥 其他投资人</h2>
+                    <div class="investors-list" id="othersList"></div>
+                </section>
+
+                <section class="section">
+                    <h2 class="section-title">📊 投资项目</h2>
+                    <div class="projects-grid" id="projectsGrid"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+        <div class="loading-spinner">⏳</div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+
+        const avatarList = [
+            { emoji: '🦊', bg: 'linear-gradient(135deg, #e67e22, #d35400)' },
+            { emoji: '🐯', bg: 'linear-gradient(135deg, #f39c12, #e67e22)' },
+            { emoji: '🦁', bg: 'linear-gradient(135deg, #f1c40f, #f39c12)' },
+            { emoji: '🐼', bg: 'linear-gradient(135deg, #2c3e50, #34495e)' },
+            { emoji: '🐨', bg: 'linear-gradient(135deg, #7f8c8d, #95a5a6)' },
+            { emoji: '🦄', bg: 'linear-gradient(135deg, #9b59b6, #8e44ad)' },
+            { emoji: '🐲', bg: 'linear-gradient(135deg, #27ae60, #2ecc71)' },
+            { emoji: '🦅', bg: 'linear-gradient(135deg, #3498db, #2980b9)' },
+            { emoji: '🐺', bg: 'linear-gradient(135deg, #34495e, #2c3e50)' },
+            { emoji: '🦈', bg: 'linear-gradient(135deg, #1abc9c, #16a085)' },
+            { emoji: '🦉', bg: 'linear-gradient(135deg, #8e44ad, #9b59b6)' },
+            { emoji: '🐢', bg: 'linear-gradient(135deg, #16a085, #1abc9c)' },
+            { emoji: '🦋', bg: 'linear-gradient(135deg, #e74c3c, #c0392b)' },
+            { emoji: '🐬', bg: 'linear-gradient(135deg, #2980b9, #3498db)' },
+            { emoji: '🦜', bg: 'linear-gradient(135deg, #e74c3c, #e67e22)' }
+        ];
+
+        let currentUser = null;
+        let tempAvatar = null;
+        let gameData = null;
+
+        function init() {
+            const saved = localStorage.getItem('currentUser');
+            if (saved) {
+                currentUser = JSON.parse(saved);
+                loadGame();
+            } else {
+                tempAvatar = randomAvatar();
+                renderAvatar();
+                loadUserCount();
+            }
+
+            document.getElementById('usernameInput').addEventListener('keypress', e => {
+                if (e.key === 'Enter' && !document.getElementById('loginBtn').disabled) login();
+            });
+
+            // 定时刷新数据
+            setInterval(() => {
+                if (currentUser) loadGame(true);
+            }, 5000);
+        }
+
+        function randomAvatar() {
+            return avatarList[Math.floor(Math.random() * avatarList.length)];
+        }
+
+        function refreshAvatar() {
+            tempAvatar = randomAvatar();
+            renderAvatar();
+        }
+
+        function renderAvatar() {
+            const el = document.getElementById('avatarPreview');
+            el.style.background = tempAvatar.bg;
+            el.textContent = tempAvatar.emoji;
+        }
+
+        function checkInput() {
+            document.getElementById('loginBtn').disabled = !document.getElementById('usernameInput').value.trim();
+        }
+
+        function showLoading() { document.getElementById('loading').classList.add('show'); }
+        function hideLoading() { document.getElementById('loading').classList.remove('show'); }
+
+        async function loadUserCount() {
+            try {
+                const res = await fetch(API_BASE + '/api/game?username=__count__');
+                const data = await res.json();
+                if (data.otherUsers) {
+                    document.getElementById('userCount').textContent = data.otherUsers.length;
+                }
+            } catch (e) {}
+        }
+
+        async function login() {
+            const username = document.getElementById('usernameInput').value.trim();
+            if (!username) return;
+
+            showLoading();
+            try {
+                const res = await fetch(API_BASE + '/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username,
+                        avatarEmoji: tempAvatar.emoji,
+                        avatarBg: tempAvatar.bg
+                    })
+                });
+
+                const data = await res.json();
+                if (data.error) {
+                    showToast(data.error, 'error');
+                    return;
+                }
+
+                currentUser = data.user;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+                showToast(data.isNew ? '注册成功，欢迎 ' + username + '！' : '欢迎回来，' + username + '！', 'info');
+                loadGame();
+            } catch (e) {
+                showToast('网络错误，请重试', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            gameData = null;
+            document.getElementById('usernameInput').value = '';
+            tempAvatar = randomAvatar();
+            renderAvatar();
+            checkInput();
+            showLogin();
+            loadUserCount();
+        }
+
+        function showLogin() {
+            document.getElementById('loginPage').classList.add('active');
+            document.getElementById('gamePage').classList.remove('active');
+        }
+
+        function showGame() {
+            document.getElementById('loginPage').classList.remove('active');
+            document.getElementById('gamePage').classList.add('active');
+        }
+
+        async function loadGame(silent = false) {
+            if (!silent) showLoading();
+            try {
+                const res = await fetch(API_BASE + '/api/game?username=' + encodeURIComponent(currentUser.username));
+                const data = await res.json();
+
+                if (data.error) {
+                    showToast(data.error, 'error');
+                    logout();
+                    return;
+                }
+
+                gameData = data;
+                currentUser = data.user;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+                renderGame();
+                showGame();
+            } catch (e) {
+                if (!silent) showToast('加载失败，请重试', 'error');
+            } finally {
+                if (!silent) hideLoading();
+            }
+        }
+
+        function renderGame() {
+            // 头部
+            document.getElementById('headerAvatar').style.background = currentUser.avatarBg;
+            document.getElementById('headerAvatar').textContent = currentUser.avatarEmoji;
+            document.getElementById('headerName').textContent = currentUser.nickName;
+            document.getElementById('innovationCoin').textContent = currentUser.innovationCoin;
+            document.getElementById('basicCoin').textContent = currentUser.basicCoin;
+
+            // 其他投资人
+            if (gameData.otherUsers.length) {
+                document.getElementById('othersSection').style.display = 'block';
+                document.getElementById('othersList').innerHTML = gameData.otherUsers.map(u => `
+                    <div class="investor-chip">
+                        <div class="investor-chip-avatar" style="background:${u.avatarBg}">${u.avatarEmoji}</div>
+                        <span class="investor-chip-name">${u.nickName}</span>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('othersSection').style.display = 'none';
+            }
+
+            // 项目
+            document.getElementById('projectsGrid').innerHTML = gameData.projects.map(p => {
+                const invested = p.investors.some(i => i.username === currentUser.username);
+                const afford = p.type === 'innovation'
+                    ? currentUser.innovationCoin >= p.price
+                    : currentUser.basicCoin >= p.price;
+
+                let btnTxt, btnCls;
+                if (invested) {
+                    btnTxt = '点击取消投资';
+                    btnCls = 'cancel';
+                } else if (afford) {
+                    btnTxt = '💰 点击投资';
+                    btnCls = p.type === 'innovation' ? 'invest-innovation' : 'invest-basic';
+                } else {
+                    btnTxt = '💸 余额不足';
+                    btnCls = 'disabled';
+                }
+
+                const invHtml = p.investors.length
+                    ? p.investors.map(i => `
+                        <div class="mini-investor ${i.username === currentUser.username ? 'me' : ''}">
+                            <div class="mini-avatar" style="background:${i.avatarBg}">${i.avatarEmoji}</div>
+                            <span>${i.nickName}</span>
+                        </div>
+                    `).join('')
+                    : '<span class="no-investor-text">暂无投资，快来抢先！</span>';
+
+                return `
+                    <div class="project-card ${p.type} ${invested ? 'invested' : ''}" onclick="clickProject(${p.id})">
+                        ${invested ? '<span class="invested-tag">✓ 已投资</span>' : ''}
+                        <div class="project-top">
+                            <div class="project-icon">${p.icon}</div>
+                            <div class="project-meta">
+                                <div class="project-name">${p.name}</div>
+                                <span class="project-type ${p.type}">${p.type === 'innovation' ? '💡 创新' : '🏗️ 基础'}</span>
+                            </div>
+                        </div>
+                        <p class="project-desc">${p.desc}</p>
+                        <div class="project-price ${p.type}">
+                            ${p.type === 'innovation' ? '💎' : '🪙'} ${p.price} ${p.type === 'innovation' ? '创新币' : '基础币'}
+                        </div>
+                        <div class="project-investors">
+                            <div class="project-investors-label">投资人 (${p.investors.length})</div>
+                            <div class="project-investors-list">${invHtml}</div>
+                        </div>
+                        <div class="project-action">
+                            <button class="action-btn ${btnCls}">${btnTxt}</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function clickProject(id) {
+            const p = gameData.projects.find(x => x.id === id);
+            if (!p) return;
+
+            const invested = p.investors.some(i => i.username === currentUser.username);
+            const endpoint = invested ? '/api/cancel' : '/api/invest';
+
+            showLoading();
+            try {
+                const res = await fetch(API_BASE + endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: currentUser.username, projectId: id })
+                });
+
+                const data = await res.json();
+
+                if (data.error) {
+                    showToast(data.error, 'warning');
+                    return;
+                }
+
+                if (invested) {
+                    const unit = p.type === 'innovation' ? '创新币' : '基础币';
+                    showToast('已取消，退还 ' + p.price + ' ' + unit, 'info');
+                } else {
+                    showToast('🎉 成功投资 ' + p.name + '！');
+                }
+
+                loadGame(true);
+            } catch (e) {
+                showToast('操作失败，请重试', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function showToast(msg, type = '') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast show ' + type;
+            setTimeout(() => t.className = 'toast', 2500);
+        }
+
+        init();
+    </script>
+</body>
+</html>

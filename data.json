@@ -1,0 +1,50 @@
+{
+  "users": {},
+  "projects": [
+    {
+      "id": 1,
+      "name": "量子计算芯片",
+      "type": "innovation",
+      "price": 150,
+      "icon": "🔬",
+      "desc": "下一代量子计算核心技术，突破传统计算极限",
+      "investors": []
+    },
+    {
+      "id": 2,
+      "name": "智能物流网络",
+      "type": "basic",
+      "price": 80,
+      "icon": "🚚",
+      "desc": "全自动化物流配送系统，覆盖全国主要城市",
+      "investors": []
+    },
+    {
+      "id": 3,
+      "name": "元宇宙社交平台",
+      "type": "innovation",
+      "price": 200,
+      "icon": "🌐",
+      "desc": "沉浸式虚拟社交空间，打造数字化生活新体验",
+      "investors": []
+    },
+    {
+      "id": 4,
+      "name": "绿色能源电站",
+      "type": "basic",
+      "price": 120,
+      "icon": "⚡",
+      "desc": "太阳能与风能混合发电，清洁能源基础设施",
+      "investors": []
+    },
+    {
+      "id": 5,
+      "name": "AI医疗诊断",
+      "type": "innovation",
+      "price": 180,
+      "icon": "🏥",
+      "desc": "人工智能辅助医疗诊断，精准医疗革命先锋",
+      "investors": []
+    }
+  ]
+}
