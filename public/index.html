@@ -175,7 +175,7 @@
         }
 
         .coin-badge.innovation { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
-        .coin-badge.basic { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        .coin-badge.platform { background: linear-gradient(135deg, #27ae60, #2ecc71); }
 
         .user-info {
             display: flex;
@@ -258,8 +258,10 @@
         .project-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.3); }
         .project-card.innovation { border-color: rgba(155,89,182,0.3); }
         .project-card.innovation:hover { border-color: #9b59b6; }
-        .project-card.basic { border-color: rgba(46,204,113,0.3); }
-        .project-card.basic:hover { border-color: #2ecc71; }
+        .project-card.platform { border-color: rgba(46,204,113,0.3); }
+        .project-card.platform:hover { border-color: #2ecc71; }
+        .project-card.unknown { border-color: rgba(149,165,166,0.3); opacity: 0.7; }
+        .project-card.unknown:hover { border-color: #95a5a6; }
         .project-card.invested { background: rgba(243,156,18,0.08); border-color: rgba(243,156,18,0.5); }
 
         .invested-tag {
@@ -287,11 +289,13 @@
         }
 
         .project-type.innovation { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
-        .project-type.basic { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        .project-type.platform { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        .project-type.unknown { background: linear-gradient(135deg, #7f8c8d, #95a5a6); }
         .project-desc { font-size: 13px; color: #8892b0; line-height: 1.5; margin-bottom: 14px; }
         .project-price { font-size: 20px; font-weight: bold; margin-bottom: 16px; }
         .project-price.innovation { color: #9b59b6; }
-        .project-price.basic { color: #2ecc71; }
+        .project-price.platform { color: #2ecc71; }
+        .project-price.unknown { color: #95a5a6; }
 
         .project-investors {
             border-top: 1px solid rgba(255,255,255,0.1);
@@ -342,11 +346,15 @@
 
         .action-btn.invest-innovation { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; }
         .action-btn.invest-innovation:hover { box-shadow: 0 5px 20px rgba(155,89,182,0.4); }
-        .action-btn.invest-basic { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; }
-        .action-btn.invest-basic:hover { box-shadow: 0 5px 20px rgba(46,204,113,0.4); }
+        .action-btn.invest-platform { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; }
+        .action-btn.invest-platform:hover { box-shadow: 0 5px 20px rgba(46,204,113,0.4); }
         .action-btn.cancel { background: rgba(255,255,255,0.1); color: #aaa; border: 1px solid rgba(255,255,255,0.15); }
         .action-btn.cancel:hover { background: rgba(255,255,255,0.15); color: #fff; }
         .action-btn.disabled { background: rgba(255,255,255,0.05); color: #555; cursor: not-allowed; }
+        .action-btn.unknown { background: rgba(149,165,166,0.3); color: #95a5a6; cursor: not-allowed; }
+
+        .project-link { color: #3498db; text-decoration: none; font-size: 12px; margin-left: 8px; }
+        .project-link:hover { text-decoration: underline; }
 
         .toast {
             position: fixed;
@@ -429,9 +437,9 @@
                         <span>💎</span>
                         <span id="innovationCoin">500</span>
                     </div>
-                    <div class="coin-badge basic">
+                    <div class="coin-badge platform">
                         <span>🪙</span>
-                        <span id="basicCoin">400</span>
+                        <span id="platformCoin">400</span>
                     </div>
                 </div>
                 <div class="user-info">
@@ -630,7 +638,7 @@
             document.getElementById('headerAvatar').textContent = currentUser.avatarEmoji;
             document.getElementById('headerName').textContent = currentUser.nickName;
             document.getElementById('innovationCoin').textContent = currentUser.innovationCoin;
-            document.getElementById('basicCoin').textContent = currentUser.basicCoin;
+            document.getElementById('platformCoin').textContent = currentUser.platformCoin;
 
             // 其他投资人
             if (gameData.otherUsers.length) {
@@ -645,20 +653,43 @@
                 document.getElementById('othersSection').style.display = 'none';
             }
 
+            // 项目类型映射
+            const typeLabels = {
+                innovation: '💡 创新业务',
+                platform: '🏗️ 平台能力升级',
+                unknown: '❓ 未知项目'
+            };
+            const coinLabels = {
+                innovation: '创新币',
+                platform: '升级币',
+                unknown: ''
+            };
+            const coinIcons = {
+                innovation: '💎',
+                platform: '🪙',
+                unknown: ''
+            };
+
             // 项目
             document.getElementById('projectsGrid').innerHTML = gameData.projects.map(p => {
                 const invested = p.investors.some(i => i.username === currentUser.username);
+                const isUnknown = p.type === 'unknown';
                 const afford = p.type === 'innovation'
                     ? currentUser.innovationCoin >= p.price
-                    : currentUser.basicCoin >= p.price;
+                    : p.type === 'platform'
+                    ? currentUser.platformCoin >= p.price
+                    : false;
 
                 let btnTxt, btnCls;
-                if (invested) {
+                if (isUnknown) {
+                    btnTxt = '🔒 暂不支持投资';
+                    btnCls = 'unknown';
+                } else if (invested) {
                     btnTxt = '点击取消投资';
                     btnCls = 'cancel';
                 } else if (afford) {
                     btnTxt = '💰 点击投资';
-                    btnCls = p.type === 'innovation' ? 'invest-innovation' : 'invest-basic';
+                    btnCls = p.type === 'innovation' ? 'invest-innovation' : 'invest-platform';
                 } else {
                     btnTxt = '💸 余额不足';
                     btnCls = 'disabled';
@@ -673,19 +704,27 @@
                     `).join('')
                     : '<span class="no-investor-text">暂无投资，快来抢先！</span>';
 
+                const priceHtml = isUnknown
+                    ? '敬请期待'
+                    : `${coinIcons[p.type]} ${p.price} ${coinLabels[p.type]}`;
+
+                const linkHtml = p.link
+                    ? `<a href="${p.link}" target="_blank" class="project-link" onclick="event.stopPropagation()">📄 查看详情</a>`
+                    : '';
+
                 return `
-                    <div class="project-card ${p.type} ${invested ? 'invested' : ''}" onclick="clickProject(${p.id})">
+                    <div class="project-card ${p.type} ${invested ? 'invested' : ''}" onclick="${isUnknown ? '' : 'clickProject(' + p.id + ')'}">
                         ${invested ? '<span class="invested-tag">✓ 已投资</span>' : ''}
                         <div class="project-top">
                             <div class="project-icon">${p.icon}</div>
                             <div class="project-meta">
-                                <div class="project-name">${p.name}</div>
-                                <span class="project-type ${p.type}">${p.type === 'innovation' ? '💡 创新' : '🏗️ 基础'}</span>
+                                <div class="project-name">${p.name}${linkHtml}</div>
+                                <span class="project-type ${p.type}">${typeLabels[p.type]}</span>
                             </div>
                         </div>
                         <p class="project-desc">${p.desc}</p>
                         <div class="project-price ${p.type}">
-                            ${p.type === 'innovation' ? '💎' : '🪙'} ${p.price} ${p.type === 'innovation' ? '创新币' : '基础币'}
+                            ${priceHtml}
                         </div>
                         <div class="project-investors">
                             <div class="project-investors-label">投资人 (${p.investors.length})</div>
@@ -722,7 +761,7 @@
                 }
 
                 if (invested) {
-                    const unit = p.type === 'innovation' ? '创新币' : '基础币';
+                    const unit = p.type === 'innovation' ? '创新币' : '升级币';
                     showToast('已取消，退还 ' + p.price + ' ' + unit, 'info');
                 } else {
                     showToast('🎉 成功投资 ' + p.name + '！');

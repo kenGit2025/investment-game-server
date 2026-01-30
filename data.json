@@ -1,50 +1,35 @@
 {
   "users": {},
   "projects": [
-    {
-      "id": 1,
-      "name": "量子计算芯片",
-      "type": "innovation",
-      "price": 150,
-      "icon": "🔬",
-      "desc": "下一代量子计算核心技术，突破传统计算极限",
-      "investors": []
-    },
-    {
-      "id": 2,
-      "name": "智能物流网络",
-      "type": "basic",
-      "price": 80,
-      "icon": "🚚",
-      "desc": "全自动化物流配送系统，覆盖全国主要城市",
-      "investors": []
-    },
-    {
-      "id": 3,
-      "name": "元宇宙社交平台",
-      "type": "innovation",
-      "price": 200,
-      "icon": "🌐",
-      "desc": "沉浸式虚拟社交空间，打造数字化生活新体验",
-      "investors": []
-    },
-    {
-      "id": 4,
-      "name": "绿色能源电站",
-      "type": "basic",
-      "price": 120,
-      "icon": "⚡",
-      "desc": "太阳能与风能混合发电，清洁能源基础设施",
-      "investors": []
-    },
-    {
-      "id": 5,
-      "name": "AI医疗诊断",
-      "type": "innovation",
-      "price": 180,
-      "icon": "🏥",
-      "desc": "人工智能辅助医疗诊断，精准医疗革命先锋",
-      "investors": []
-    }
+    { "id": 1, "name": "飞书项目 AI 版", "type": "innovation", "price": 120, "icon": "🤖", "desc": "AI 驱动的项目管理新体验", "link": "https://bytedance.larkoffice.com/wiki/CoyrwVqKqiQO4NkmkdXc7l0Yn9V", "investors": [] },
+    { "id": 2, "name": "飞书任务 AI 版", "type": "innovation", "price": 100, "icon": "✅", "desc": "智能任务管理与自动化", "link": "https://bytedance.larkoffice.com/wiki/H8l9w7bw2i8dXgkPNOOcX1EInmQ", "investors": [] },
+    { "id": 3, "name": "Meego LTC 智能产品解决方案", "type": "innovation", "price": 150, "icon": "💼", "desc": "打通 B2B 企业从线索到回款的端到端价值链", "link": "https://bytedance.larkoffice.com/wiki/SMCQwNkGtiqamrki8Q5cC2qhnwR", "investors": [] },
+    { "id": 4, "name": "开发者 AI 赋能", "type": "innovation", "price": 130, "icon": "👨‍💻", "desc": "为开发者提供 AI 能力支持", "link": "https://bytedance.larkoffice.com/wiki/FfdmwcUY5iwqcpkL35qc1RNjnFg", "investors": [] },
+    { "id": 5, "name": "Meego AI 提效 2026", "type": "innovation", "price": 140, "icon": "⚡", "desc": "AI 驱动效率提升计划", "link": "https://bytedance.larkoffice.com/wiki/GHCXw2VIZiFSPykeLNuclI9Hnxd", "investors": [] },
+    { "id": 6, "name": "轻应用 2.0", "type": "innovation", "price": 110, "icon": "📱", "desc": "新一代轻量级应用平台", "link": "https://bytedance.larkoffice.com/wiki/P5COwtgcBisRwAkQe38cbvmOnVf", "investors": [] },
+    { "id": 7, "name": "AI friendly", "type": "innovation", "price": 90, "icon": "🤝", "desc": "AI 友好型产品设计", "link": "https://bytedance.larkoffice.com/wiki/QANDwdDWSiKrmKktyUsccC8wnRf", "investors": [] },
+    { "id": 8, "name": "AI赋能/Agent", "type": "innovation", "price": 160, "icon": "🧠", "desc": "智能 Agent 能力建设", "link": "https://bytedance.larkoffice.com/wiki/VpsJwdOLWiyDgKk6AHqcSPyKnpb", "investors": [] },
+    { "id": 9, "name": "IPMS解决方案", "type": "innovation", "price": 120, "icon": "📊", "desc": "集成项目管理解决方案", "link": "https://bytedance.larkoffice.com/wiki/ZHocwQT2ii6hoXkilGgcKfcvn9b", "investors": [] },
+    { "id": 10, "name": "经销商供应商管理", "type": "innovation", "price": 100, "icon": "🏪", "desc": "供应链管理数字化", "link": "https://bytedance.larkoffice.com/wiki/FybjwAQBciR7bjkYR0icSOEYndf", "investors": [] },
+    { "id": 11, "name": "Meego串联产业链上下游", "type": "innovation", "price": 130, "icon": "🔗", "desc": "产业链协同平台", "link": "https://bytedance.larkoffice.com/wiki/Na3fwvZkGiqfZOkxBuJc5hjPnod", "investors": [] },
+    { "id": 12, "name": "移动端-私有化交付同构", "type": "platform", "price": 80, "icon": "📲", "desc": "移动端私有化部署能力", "link": "https://bytedance.larkoffice.com/docx/HvCAdxLNxoFEmWxu3m9c6TounWc", "investors": [] },
+    { "id": 13, "name": "Meego 流量地图", "type": "platform", "price": 70, "icon": "🗺️", "desc": "流量可视化分析平台", "link": "https://bytedance.larkoffice.com/wiki/QZaFwm3fwiM5kgkajKtcoqr6nig", "investors": [] },
+    { "id": 14, "name": "空间配置 IDE 化", "type": "platform", "price": 90, "icon": "⚙️", "desc": "配置管理开发体验升级", "link": "https://bytedance.larkoffice.com/wiki/EprSwtZZpiaLdqk3gWRc706mnye", "investors": [] },
+    { "id": 15, "name": "Meego 新用户引导与问答 Agent", "type": "platform", "price": 60, "icon": "💡", "desc": "智能用户引导系统", "link": "https://bytedance.larkoffice.com/docx/ZupBd3PJTolJYNx30zCcmf8engg", "investors": [] },
+    { "id": 16, "name": "计算&自动化性能提升 10 倍", "type": "platform", "price": 100, "icon": "🚀", "desc": "核心计算能力大幅提升", "link": "https://bytedance.larkoffice.com/wiki/WWo1wu7RdiRKoekO9NkcU807nze", "investors": [] },
+    { "id": 17, "name": "Meego 数据服务", "type": "platform", "price": 85, "icon": "📈", "desc": "数据服务能力建设", "link": "https://bytedance.larkoffice.com/wiki/B1M3wQdceid7jgk9CTBcaP2pnoe", "investors": [] },
+    { "id": 18, "name": "更智能、更贴合业务的计划表", "type": "platform", "price": 75, "icon": "📅", "desc": "智能计划表升级", "link": "https://bytedance.larkoffice.com/wiki/ShqKwROxvigZTXkd1x9cCCUinjX", "investors": [] },
+    { "id": 19, "name": "业财融合", "type": "platform", "price": 95, "icon": "💰", "desc": "建立项目财务中间件", "link": "https://bytedance.larkoffice.com/wiki/BhKDwUSK2ircexkWRhJcrnybnx5", "investors": [] },
+    { "id": 20, "name": "流程智能化", "type": "platform", "price": 90, "icon": "🔄", "desc": "从流程数字化到业务生产一体化", "link": "https://bytedance.larkoffice.com/wiki/NgZNw0hfBi1lUZkU8SYcNyLGnWh", "investors": [] },
+    { "id": 21, "name": "插件助手", "type": "platform", "price": 65, "icon": "🔌", "desc": "插件能力扩展平台", "link": "https://bytedance.larkoffice.com/wiki/ML58wcBBdiwzVzkWwXwcvoccn5f", "investors": [] },
+    { "id": 22, "name": "工作项模型改进", "type": "platform", "price": 80, "icon": "🛠️", "desc": "工作项数据模型优化", "link": "https://bytedance.larkoffice.com/wiki/S2ZfwIWzCiKGWHkAEKGc69cCnEf", "investors": [] },
+    { "id": 23, "name": "一站式能力与解决方案交易平台", "type": "platform", "price": 110, "icon": "🏬", "desc": "灵活可拓展的商业模型架构", "link": "https://bytedance.larkoffice.com/wiki/IfFcwyJYzitGslkTeLzcPLj1nSd", "investors": [] },
+    { "id": 24, "name": "跨境协作与企业级安全", "type": "platform", "price": 100, "icon": "🔐", "desc": "高阶安全解决方案", "link": "https://bytedance.larkoffice.com/wiki/FgKOwaLfJiMfflk3yDoc3y8Hnjg", "investors": [] },
+    { "id": 25, "name": "Builder管业务", "type": "platform", "price": 85, "icon": "🏗️", "desc": "业务构建能力升级", "link": "https://bytedance.larkoffice.com/wiki/XNAfwuHcNi91fKkEla6cDOnfnvd", "investors": [] },
+    { "id": 26, "name": "IPD全域协同", "type": "unknown", "price": 0, "icon": "❓", "desc": "敬请期待", "link": "https://bytedance.larkoffice.com/wiki/VOHAwoNp2iKMzzkIHKEcJ6x2nze", "investors": [] },
+    { "id": 27, "name": "工作台&导航3.0焕新", "type": "unknown", "price": 0, "icon": "❓", "desc": "敬请期待", "link": "https://bytedance.larkoffice.com/wiki/RakqwVOH9iA3hZkAE3zcfzEXnxf", "investors": [] },
+    { "id": 28, "name": "项目资产中心", "type": "unknown", "price": 0, "icon": "❓", "desc": "敬请期待", "link": "https://bytedance.larkoffice.com/wiki/AXs7w03qtiuSpMkKy9jcOTBZnkj", "investors": [] },
+    { "id": 29, "name": "人员与组织能力升级", "type": "unknown", "price": 0, "icon": "❓", "desc": "敬请期待", "link": "https://bytedance.larkoffice.com/wiki/Nkz6wOTXoiEmNekYhp0c4RwEnhf", "investors": [] },
+    { "id": 30, "name": "智能评论&知识沉淀", "type": "unknown", "price": 0, "icon": "❓", "desc": "敬请期待", "link": "https://bytedance.larkoffice.com/wiki/H5eCw1NTHiWN59kCmCecKMfvnDf", "investors": [] }
   ]
 }
