@@ -99,7 +99,7 @@ async function initProjects() {
   }
 }
 
-// API: 登录/注册（优化：使用 findOneAndUpdate upsert）
+// API: 登录/注册
 app.post('/api/login', async (req, res) => {
   try {
     const { username, avatarEmoji, avatarBg } = req.body;
@@ -115,26 +115,28 @@ app.post('/api/login', async (req, res) => {
       });
     }
 
-    // 使用 findOneAndUpdate 配合 upsert，一次数据库操作完成查找或创建
-    const result = await User.findOneAndUpdate(
-      { username },
-      {
-        $setOnInsert: {
-          username,
-          nickName: username,
-          avatarEmoji,
-          avatarBg,
-          innovationCoin: defaultCoins.innovationCoin,
-          platformCoin: defaultCoins.platformCoin,
-          createdAt: new Date()
-        }
-      },
-      { upsert: true, new: true, lean: true, rawResult: true }
-    );
+    // 先查找用户
+    let user = await User.findOne({ username }).lean();
+    let isNew = false;
 
-    const isNew = result.lastErrorObject?.upserted != null;
-    res.json({ user: result.value, isNew });
+    if (!user) {
+      // 用户不存在，创建新用户
+      const newUser = new User({
+        username,
+        nickName: username,
+        avatarEmoji,
+        avatarBg,
+        innovationCoin: defaultCoins.innovationCoin,
+        platformCoin: defaultCoins.platformCoin
+      });
+      user = await newUser.save();
+      user = user.toObject();
+      isNew = true;
+    }
+
+    res.json({ user, isNew });
   } catch (e) {
+    console.error('登录错误:', e);
     res.status(500).json({ error: '服务器错误' });
   }
 });
