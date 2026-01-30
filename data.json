@@ -5,8 +5,8 @@
       "nickName": "ken",
       "avatarEmoji": "🦅",
       "avatarBg": "linear-gradient(135deg, #3498db, #2980b9)",
-      "innovationCoin": 500,
-      "platformCoin": 400,
+      "innovationCoin": 260,
+      "platformCoin": 205,
       "createdAt": "2026-01-30T11:55:36.799Z"
     },
     "xxx": {
@@ -51,6 +51,12 @@
           "nickName": "xxx",
           "avatarEmoji": "🦈",
           "avatarBg": "linear-gradient(135deg, #1abc9c, #16a085)"
+        },
+        {
+          "username": "ken",
+          "nickName": "ken",
+          "avatarEmoji": "🦅",
+          "avatarBg": "linear-gradient(135deg, #3498db, #2980b9)"
         }
       ]
     },
@@ -89,7 +95,14 @@
       "icon": "⚡",
       "desc": "AI 驱动效率提升计划",
       "link": "https://bytedance.larkoffice.com/wiki/GHCXw2VIZiFSPykeLNuclI9Hnxd",
-      "investors": []
+      "investors": [
+        {
+          "username": "ken",
+          "nickName": "ken",
+          "avatarEmoji": "🦅",
+          "avatarBg": "linear-gradient(135deg, #3498db, #2980b9)"
+        }
+      ]
     },
     {
       "id": 6,
@@ -269,7 +282,14 @@
       "icon": "🏬",
       "desc": "灵活可拓展的商业模型架构",
       "link": "https://bytedance.larkoffice.com/wiki/IfFcwyJYzitGslkTeLzcPLj1nSd",
-      "investors": []
+      "investors": [
+        {
+          "username": "ken",
+          "nickName": "ken",
+          "avatarEmoji": "🦅",
+          "avatarBg": "linear-gradient(135deg, #3498db, #2980b9)"
+        }
+      ]
     },
     {
       "id": 24,
@@ -289,7 +309,14 @@
       "icon": "🏗️",
       "desc": "业务构建能力升级",
       "link": "https://bytedance.larkoffice.com/wiki/XNAfwuHcNi91fKkEla6cDOnfnvd",
-      "investors": []
+      "investors": [
+        {
+          "username": "ken",
+          "nickName": "ken",
+          "avatarEmoji": "🦅",
+          "avatarBg": "linear-gradient(135deg, #3498db, #2980b9)"
+        }
+      ]
     },
     {
       "id": 26,
