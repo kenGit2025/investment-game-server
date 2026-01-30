@@ -453,6 +453,27 @@
             font-size: 12px;
             margin-left: 10px;
         }
+        .admin-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 16px;
+        }
+        .admin-tab {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.05);
+            border: none;
+            border-radius: 10px;
+            color: #8892b0;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .admin-tab:hover { background: rgba(255,255,255,0.1); }
+        .admin-tab.active { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
+        .admin-content { display: none; }
+        .admin-content.active { display: block; }
         .ranking-section {
             background: rgba(255,255,255,0.05);
             border-radius: 16px;
@@ -498,13 +519,8 @@
         .ranking-info { flex: 1; }
         .ranking-name { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
         .ranking-desc { font-size: 12px; color: #8892b0; }
-        .ranking-stats {
-            text-align: right;
-        }
-        .ranking-count {
-            font-size: 20px;
-            font-weight: bold;
-        }
+        .ranking-stats { text-align: right; }
+        .ranking-count { font-size: 20px; font-weight: bold; }
         .ranking-count.innovation { color: #9b59b6; }
         .ranking-count.platform { color: #2ecc71; }
         .ranking-label { font-size: 11px; color: #8892b0; }
@@ -525,6 +541,113 @@
         .stat-value.platform { color: #2ecc71; }
         .stat-value.total { color: #f39c12; }
         .stat-label { font-size: 13px; color: #8892b0; }
+        /* 项目管理样式 */
+        .project-form {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .form-title { font-size: 16px; font-weight: bold; margin-bottom: 16px; }
+        .form-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+        .form-group { flex: 1; min-width: 200px; }
+        .form-group label { display: block; font-size: 13px; color: #8892b0; margin-bottom: 6px; }
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+        .form-input:focus { border-color: #3498db; }
+        .form-input option { background: #1a1a2e; }
+        .form-actions { display: flex; gap: 12px; margin-top: 20px; }
+        .btn-primary {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .btn-primary:hover { box-shadow: 0 4px 15px rgba(52,152,219,0.4); }
+        .btn-secondary {
+            padding: 10px 24px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .project-list-admin { margin-top: 24px; }
+        .project-item-admin {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            gap: 16px;
+        }
+        .project-item-admin:hover { background: rgba(255,255,255,0.06); }
+        .project-item-info { flex: 1; }
+        .project-item-name { font-size: 15px; font-weight: 500; }
+        .project-item-meta { font-size: 12px; color: #8892b0; margin-top: 4px; }
+        .btn-edit {
+            padding: 6px 16px;
+            background: rgba(52,152,219,0.2);
+            border: 1px solid rgba(52,152,219,0.4);
+            border-radius: 6px;
+            color: #3498db;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .btn-edit:hover { background: rgba(52,152,219,0.3); }
+        /* 用户投资情况样式 */
+        .user-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .user-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-card-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .user-card-name { font-size: 18px; font-weight: bold; }
+        .user-card-coins { display: flex; gap: 16px; margin-top: 4px; }
+        .user-coin { font-size: 13px; }
+        .user-coin.innovation { color: #9b59b6; }
+        .user-coin.platform { color: #2ecc71; }
+        .user-investments { display: flex; flex-wrap: wrap; gap: 8px; }
+        .user-invest-tag {
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 6px;
+            font-size: 12px;
+        }
+        .user-invest-tag.innovation { border-left: 3px solid #9b59b6; }
+        .user-invest-tag.platform { border-left: 3px solid #2ecc71; }
+        .user-no-invest { color: #666; font-size: 13px; font-style: italic; }
+        .user-spend { font-size: 13px; color: #f39c12; margin-top: 12px; }
     </style>
 </head>
 <body>
@@ -624,16 +747,69 @@
 
         <main class="main">
             <div class="container">
-                <div class="stats-summary" id="statsSummary"></div>
-
-                <div class="ranking-section">
-                    <h3 class="ranking-title innovation">💡 创新业务投资排行</h3>
-                    <ul class="ranking-list" id="innovationRanking"></ul>
+                <div class="admin-tabs">
+                    <button class="admin-tab active" onclick="switchAdminTab('projects')">📝 项目管理</button>
+                    <button class="admin-tab" onclick="switchAdminTab('users')">👥 用户投资</button>
+                    <button class="admin-tab" onclick="switchAdminTab('ranking')">📊 投资排行</button>
                 </div>
 
-                <div class="ranking-section">
-                    <h3 class="ranking-title platform">🏗️ 平台能力升级投资排行</h3>
-                    <ul class="ranking-list" id="platformRanking"></ul>
+                <!-- 项目管理 -->
+                <div id="adminProjects" class="admin-content active">
+                    <div class="project-form">
+                        <h3 class="form-title" id="formTitle">➕ 添加新项目</h3>
+                        <input type="hidden" id="editProjectId">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>项目名称</label>
+                                <input type="text" class="form-input" id="projectName" placeholder="输入项目名称">
+                            </div>
+                            <div class="form-group">
+                                <label>项目类型</label>
+                                <select class="form-input" id="projectType">
+                                    <option value="innovation">💡 创新业务</option>
+                                    <option value="platform">🏗️ 平台能力升级</option>
+                                    <option value="unknown">❓ 未知项目</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>项目价格</label>
+                                <input type="number" class="form-input" id="projectPrice" placeholder="输入价格" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>项目链接</label>
+                                <input type="text" class="form-input" id="projectLink" placeholder="输入项目链接（可选）">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>项目描述</label>
+                            <input type="text" class="form-input" id="projectDesc" placeholder="输入项目描述">
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn-primary" onclick="saveProject()">💾 保存项目</button>
+                            <button class="btn-secondary" onclick="resetForm()">🔄 重置</button>
+                        </div>
+                    </div>
+                    <div class="project-list-admin" id="projectListAdmin"></div>
+                </div>
+
+                <!-- 用户投资情况 -->
+                <div id="adminUsers" class="admin-content">
+                    <div id="usersList"></div>
+                </div>
+
+                <!-- 投资排行 -->
+                <div id="adminRanking" class="admin-content">
+                    <div class="stats-summary" id="statsSummary"></div>
+                    <div class="ranking-section">
+                        <h3 class="ranking-title innovation">💡 创新业务投资排行</h3>
+                        <ul class="ranking-list" id="innovationRanking"></ul>
+                    </div>
+                    <div class="ranking-section">
+                        <h3 class="ranking-title platform">🏗️ 平台能力升级投资排行</h3>
+                        <ul class="ranking-list" id="platformRanking"></ul>
+                    </div>
                 </div>
             </div>
         </main>
@@ -994,17 +1170,19 @@
         }
 
         // 管理员功能
+        let adminUsersData = null;
+
         async function loadAdminData(silent = false) {
             if (!silent) showLoading();
             try {
-                const res = await fetch(API_BASE + '/api/game?username=' + encodeURIComponent(currentUser.username));
-                const data = await res.json();
+                const [gameRes, usersRes] = await Promise.all([
+                    fetch(API_BASE + '/api/game?username=' + encodeURIComponent(currentUser.username)),
+                    fetch(API_BASE + '/api/admin/users')
+                ]);
 
-                if (data.error) {
-                    // 管理员不需要注册，直接使用数据
-                }
+                gameData = await gameRes.json();
+                adminUsersData = await usersRes.json();
 
-                gameData = data;
                 renderAdmin();
                 showAdmin();
             } catch (e) {
@@ -1014,12 +1192,76 @@
             }
         }
 
+        function switchAdminTab(tab) {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById('admin' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+        }
+
         function renderAdmin() {
             if (!gameData || !gameData.projects) return;
 
-            const projects = gameData.projects;
+            renderProjectList();
+            renderUsersList();
+            renderRanking();
+        }
 
-            // 统计数据
+        function renderProjectList() {
+            const projects = gameData.projects;
+            const typeLabels = { innovation: '💡 创新业务', platform: '🏗️ 平台能力升级', unknown: '❓ 未知项目' };
+
+            document.getElementById('projectListAdmin').innerHTML = projects.map(p => `
+                <div class="project-item-admin">
+                    <div class="project-item-info">
+                        <div class="project-item-name">${p.name}</div>
+                        <div class="project-item-meta">${typeLabels[p.type]} · ${p.price} 币 · ${p.investors.length} 人投资</div>
+                    </div>
+                    <button class="btn-edit" onclick="editProject(${p.id})">✏️ 编辑</button>
+                </div>
+            `).join('');
+        }
+
+        function renderUsersList() {
+            if (!adminUsersData || !adminUsersData.users) return;
+
+            const users = adminUsersData.users;
+            if (users.length === 0) {
+                document.getElementById('usersList').innerHTML = '<p style="color:#666;text-align:center;">暂无用户数据</p>';
+                return;
+            }
+
+            document.getElementById('usersList').innerHTML = users.map(u => {
+                const investHtml = u.investments.length > 0
+                    ? u.investments.map(inv => `
+                        <span class="user-invest-tag ${inv.type}">${inv.name} (${inv.price}币)</span>
+                    `).join('')
+                    : '<span class="user-no-invest">暂无投资</span>';
+
+                return `
+                    <div class="user-card">
+                        <div class="user-card-header">
+                            <div class="user-card-avatar" style="background:${u.avatarBg}">${u.avatarEmoji}</div>
+                            <div>
+                                <div class="user-card-name">${u.nickName}</div>
+                                <div class="user-card-coins">
+                                    <span class="user-coin innovation">💎 创新币: ${u.innovationCoin}</span>
+                                    <span class="user-coin platform">🪙 升级币: ${u.platformCoin}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="user-investments">${investHtml}</div>
+                        <div class="user-spend">
+                            已花费：创新币 ${u.totalSpent.innovation} · 升级币 ${u.totalSpent.platform}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderRanking() {
+            const projects = gameData.projects;
             const innovationProjects = projects.filter(p => p.type === 'innovation');
             const platformProjects = projects.filter(p => p.type === 'platform');
 
@@ -1027,7 +1269,6 @@
             const platformInvestors = platformProjects.reduce((sum, p) => sum + p.investors.length, 0);
             const totalInvestors = innovationInvestors + platformInvestors;
 
-            // 渲染统计卡片
             document.getElementById('statsSummary').innerHTML = `
                 <div class="stat-card">
                     <div class="stat-value total">${totalInvestors}</div>
@@ -1043,7 +1284,6 @@
                 </div>
             `;
 
-            // 渲染创新业务排行
             const innovationRanked = innovationProjects
                 .map(p => ({ ...p, count: p.investors.length }))
                 .sort((a, b) => b.count - a.count);
@@ -1062,7 +1302,6 @@
                 </li>
             `).join('');
 
-            // 渲染平台能力升级排行
             const platformRanked = platformProjects
                 .map(p => ({ ...p, count: p.investors.length }))
                 .sort((a, b) => b.count - a.count);
@@ -1080,6 +1319,69 @@
                     </div>
                 </li>
             `).join('');
+        }
+
+        function editProject(id) {
+            const project = gameData.projects.find(p => p.id === id);
+            if (!project) return;
+
+            document.getElementById('editProjectId').value = id;
+            document.getElementById('projectName').value = project.name;
+            document.getElementById('projectType').value = project.type;
+            document.getElementById('projectPrice').value = project.price;
+            document.getElementById('projectDesc').value = project.desc || '';
+            document.getElementById('projectLink').value = project.link || '';
+            document.getElementById('formTitle').textContent = '✏️ 编辑项目';
+        }
+
+        function resetForm() {
+            document.getElementById('editProjectId').value = '';
+            document.getElementById('projectName').value = '';
+            document.getElementById('projectType').value = 'innovation';
+            document.getElementById('projectPrice').value = '';
+            document.getElementById('projectDesc').value = '';
+            document.getElementById('projectLink').value = '';
+            document.getElementById('formTitle').textContent = '➕ 添加新项目';
+        }
+
+        async function saveProject() {
+            const id = document.getElementById('editProjectId').value;
+            const name = document.getElementById('projectName').value.trim();
+            const type = document.getElementById('projectType').value;
+            const price = document.getElementById('projectPrice').value;
+            const desc = document.getElementById('projectDesc').value.trim();
+            const link = document.getElementById('projectLink').value.trim();
+
+            if (!name) {
+                showToast('请输入项目名称', 'warning');
+                return;
+            }
+
+            showLoading();
+            try {
+                const url = id ? API_BASE + '/api/project/' + id : API_BASE + '/api/project';
+                const method = id ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, type, price, desc, link })
+                });
+
+                const data = await res.json();
+                if (data.error) {
+                    showToast(data.error, 'error');
+                    return;
+                }
+
+                showToast(id ? '项目已更新' : '项目已添加', 'info');
+                resetForm();
+                loadAdminData(true);
+            } catch (e) {
+                showToast('保存失败，请重试', 'error');
+            } finally {
+                hideLoading();
+            }
         }
 
         function showToast(msg, type = '') {

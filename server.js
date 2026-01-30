@@ -248,6 +248,94 @@ app.post('/api/reset', (req, res) => {
   res.json({ success: true, message: '游戏已重置' });
 });
 
+// API: 添加项目（管理员用）
+app.post('/api/project', (req, res) => {
+  const { name, type, price, desc, link } = req.body;
+
+  if (!name || !type) {
+    return res.status(400).json({ error: '项目名称和类型必填' });
+  }
+
+  const data = readData();
+  const maxId = data.projects.reduce((max, p) => Math.max(max, p.id), 0);
+
+  const newProject = {
+    id: maxId + 1,
+    name,
+    type,
+    price: parseInt(price) || 0,
+    icon: type === 'innovation' ? '💡' : type === 'platform' ? '🏗️' : '❓',
+    desc: desc || '',
+    link: link || '',
+    investors: []
+  };
+
+  data.projects.push(newProject);
+  writeData(data);
+
+  res.json({ success: true, project: newProject });
+});
+
+// API: 修改项目（管理员用）
+app.put('/api/project/:id', (req, res) => {
+  const projectId = parseInt(req.params.id);
+  const { name, type, price, desc, link } = req.body;
+
+  const data = readData();
+  const project = data.projects.find(p => p.id === projectId);
+
+  if (!project) {
+    return res.status(404).json({ error: '项目不存在' });
+  }
+
+  if (name) project.name = name;
+  if (type) {
+    project.type = type;
+    project.icon = type === 'innovation' ? '💡' : type === 'platform' ? '🏗️' : '❓';
+  }
+  if (price !== undefined) project.price = parseInt(price) || 0;
+  if (desc !== undefined) project.desc = desc;
+  if (link !== undefined) project.link = link;
+
+  writeData(data);
+
+  res.json({ success: true, project });
+});
+
+// API: 获取所有用户投资情况（管理员用）
+app.get('/api/admin/users', (req, res) => {
+  const data = readData();
+
+  const usersWithInvestments = Object.values(data.users).map(user => {
+    const investments = [];
+    let totalSpent = { innovation: 0, platform: 0 };
+
+    data.projects.forEach(project => {
+      if (project.investors.some(i => i.username === user.username)) {
+        investments.push({
+          id: project.id,
+          name: project.name,
+          type: project.type,
+          price: project.price
+        });
+        if (project.type === 'innovation') {
+          totalSpent.innovation += project.price;
+        } else if (project.type === 'platform') {
+          totalSpent.platform += project.price;
+        }
+      }
+    });
+
+    return {
+      ...user,
+      investments,
+      totalSpent
+    };
+  });
+
+  res.json({ users: usersWithInvestments });
+});
+
 // 启动服务器
 app.listen(PORT, () => {
   console.log(`
