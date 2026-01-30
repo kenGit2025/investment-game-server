@@ -5,16 +5,20 @@ const mongoose = require('mongoose');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// MongoDB 连接
+// MongoDB 连接（优化连接池配置）
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/investment-game';
 
-mongoose.connect(MONGODB_URI)
+mongoose.connect(MONGODB_URI, {
+  maxPoolSize: 10,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+})
   .then(() => console.log('✅ MongoDB 连接成功'))
   .catch(err => console.error('❌ MongoDB 连接失败:', err));
 
-// 定义数据模型
+// 定义数据模型（添加索引优化查询）
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
+  username: { type: String, required: true, unique: true, index: true },
   nickName: String,
   avatarEmoji: String,
   avatarBg: String,
@@ -24,20 +28,23 @@ const userSchema = new mongoose.Schema({
 });
 
 const projectSchema = new mongoose.Schema({
-  id: { type: Number, required: true, unique: true },
+  id: { type: Number, required: true, unique: true, index: true },
   name: String,
-  type: String,
+  type: { type: String, index: true },
   price: Number,
   icon: String,
   desc: String,
   link: String,
   investors: [{
-    username: String,
+    username: { type: String, index: true },
     nickName: String,
     avatarEmoji: String,
     avatarBg: String
   }]
 });
+
+// 创建复合索引
+projectSchema.index({ 'investors.username': 1 });
 
 const User = mongoose.model('User', userSchema);
 const Project = mongoose.model('Project', projectSchema);
@@ -92,7 +99,7 @@ async function initProjects() {
   }
 }
 
-// API: 登录/注册
+// API: 登录/注册（优化：使用 findOneAndUpdate upsert）
 app.post('/api/login', async (req, res) => {
   try {
     const { username, avatarEmoji, avatarBg } = req.body;
@@ -108,29 +115,31 @@ app.post('/api/login', async (req, res) => {
       });
     }
 
-    let user = await User.findOne({ username });
-    let isNew = false;
+    // 使用 findOneAndUpdate 配合 upsert，一次数据库操作完成查找或创建
+    const result = await User.findOneAndUpdate(
+      { username },
+      {
+        $setOnInsert: {
+          username,
+          nickName: username,
+          avatarEmoji,
+          avatarBg,
+          innovationCoin: defaultCoins.innovationCoin,
+          platformCoin: defaultCoins.platformCoin,
+          createdAt: new Date()
+        }
+      },
+      { upsert: true, new: true, lean: true, rawResult: true }
+    );
 
-    if (!user) {
-      user = new User({
-        username,
-        nickName: username,
-        avatarEmoji,
-        avatarBg,
-        innovationCoin: defaultCoins.innovationCoin,
-        platformCoin: defaultCoins.platformCoin
-      });
-      await user.save();
-      isNew = true;
-    }
-
-    res.json({ user, isNew });
+    const isNew = result.lastErrorObject?.upserted != null;
+    res.json({ user: result.value, isNew });
   } catch (e) {
     res.status(500).json({ error: '服务器错误' });
   }
 });
 
-// API: 获取游戏数据
+// API: 获取游戏数据（优化：并行查询 + lean）
 app.get('/api/game', async (req, res) => {
   try {
     const { username } = req.query;
@@ -139,37 +148,30 @@ app.get('/api/game', async (req, res) => {
       return res.status(400).json({ error: '需要用户名' });
     }
 
-    const projects = await Project.find().sort({ id: 1 });
-
     if (username === 'meegoadmin') {
-      const users = await User.find();
-      const otherUsers = users.map(u => ({
-        username: u.username,
-        nickName: u.nickName,
-        avatarEmoji: u.avatarEmoji,
-        avatarBg: u.avatarBg
-      }));
+      // 并行查询项目和用户
+      const [projects, users] = await Promise.all([
+        Project.find().sort({ id: 1 }).lean(),
+        User.find().select('username nickName avatarEmoji avatarBg').lean()
+      ]);
 
       return res.json({
         user: { username: 'meegoadmin', nickName: '管理员', isAdmin: true },
         projects,
-        otherUsers
+        otherUsers: users
       });
     }
 
-    const user = await User.findOne({ username });
+    // 并行查询当前用户、项目、其他用户
+    const [user, projects, otherUsers] = await Promise.all([
+      User.findOne({ username }).lean(),
+      Project.find().sort({ id: 1 }).lean(),
+      User.find({ username: { $ne: username } }).select('username nickName avatarEmoji avatarBg').lean()
+    ]);
 
     if (!user) {
       return res.status(404).json({ error: '用户不存在' });
     }
-
-    const users = await User.find({ username: { $ne: username } });
-    const otherUsers = users.map(u => ({
-      username: u.username,
-      nickName: u.nickName,
-      avatarEmoji: u.avatarEmoji,
-      avatarBg: u.avatarBg
-    }));
 
     res.json({ user, projects, otherUsers });
   } catch (e) {
@@ -177,13 +179,16 @@ app.get('/api/game', async (req, res) => {
   }
 });
 
-// API: 投资
+// API: 投资（优化：并行查询 + findOneAndUpdate）
 app.post('/api/invest', async (req, res) => {
   try {
     const { username, projectId } = req.body;
 
-    const user = await User.findOne({ username });
-    const project = await Project.findOne({ id: projectId });
+    // 并行查询用户和项目
+    const [user, project] = await Promise.all([
+      User.findOne({ username }).lean(),
+      Project.findOne({ id: projectId }).lean()
+    ]);
 
     if (!user || !project) {
       return res.status(400).json({ error: '无效请求' });
@@ -202,48 +207,63 @@ app.post('/api/invest', async (req, res) => {
       return res.status(400).json({ error: '余额不足' });
     }
 
-    user[coinType] -= project.price;
-    await user.save();
+    // 并行更新用户和项目
+    const [updatedUser, updatedProject] = await Promise.all([
+      User.findOneAndUpdate(
+        { username },
+        { $inc: { [coinType]: -project.price } },
+        { new: true, lean: true }
+      ),
+      Project.findOneAndUpdate(
+        { id: projectId },
+        { $push: { investors: { username: user.username, nickName: user.nickName, avatarEmoji: user.avatarEmoji, avatarBg: user.avatarBg } } },
+        { new: true, lean: true }
+      )
+    ]);
 
-    project.investors.push({
-      username: user.username,
-      nickName: user.nickName,
-      avatarEmoji: user.avatarEmoji,
-      avatarBg: user.avatarBg
-    });
-    await project.save();
-
-    res.json({ success: true, user, project });
+    res.json({ success: true, user: updatedUser, project: updatedProject });
   } catch (e) {
     res.status(500).json({ error: '服务器错误' });
   }
 });
 
-// API: 取消投资
+// API: 取消投资（优化：并行查询 + findOneAndUpdate）
 app.post('/api/cancel', async (req, res) => {
   try {
     const { username, projectId } = req.body;
 
-    const user = await User.findOne({ username });
-    const project = await Project.findOne({ id: projectId });
+    const project = await Project.findOne({ id: projectId }).lean();
 
-    if (!user || !project) {
+    if (!project) {
       return res.status(400).json({ error: '无效请求' });
     }
 
-    const investorIndex = project.investors.findIndex(i => i.username === username);
-    if (investorIndex === -1) {
+    const hasInvested = project.investors.some(i => i.username === username);
+    if (!hasInvested) {
       return res.status(400).json({ error: '未找到投资记录' });
     }
 
     const coinType = project.type === 'innovation' ? 'innovationCoin' : 'platformCoin';
-    user[coinType] += project.price;
-    await user.save();
 
-    project.investors.splice(investorIndex, 1);
-    await project.save();
+    // 并行更新用户和项目
+    const [updatedUser, updatedProject] = await Promise.all([
+      User.findOneAndUpdate(
+        { username },
+        { $inc: { [coinType]: project.price } },
+        { new: true, lean: true }
+      ),
+      Project.findOneAndUpdate(
+        { id: projectId },
+        { $pull: { investors: { username } } },
+        { new: true, lean: true }
+      )
+    ]);
 
-    res.json({ success: true, user, project });
+    if (!updatedUser) {
+      return res.status(400).json({ error: '用户不存在' });
+    }
+
+    res.json({ success: true, user: updatedUser, project: updatedProject });
   } catch (e) {
     res.status(500).json({ error: '服务器错误' });
   }
@@ -318,31 +338,38 @@ app.put('/api/project/:id', async (req, res) => {
   }
 });
 
-// API: 获取所有用户投资情况
+// API: 获取所有用户投资情况（优化：并行查询 + lean）
 app.get('/api/admin/users', async (req, res) => {
   try {
-    const users = await User.find();
-    const projects = await Project.find();
+    // 并行查询用户和项目
+    const [users, projects] = await Promise.all([
+      User.find().lean(),
+      Project.find().select('id name type price investors.username').lean()
+    ]);
+
+    // 预构建用户投资映射，避免重复遍历
+    const userInvestments = new Map();
+    projects.forEach(project => {
+      project.investors.forEach(investor => {
+        if (!userInvestments.has(investor.username)) {
+          userInvestments.set(investor.username, []);
+        }
+        userInvestments.get(investor.username).push({
+          id: project.id,
+          name: project.name,
+          type: project.type,
+          price: project.price
+        });
+      });
+    });
 
     const usersWithInvestments = users.map(user => {
-      const investments = [];
-      let totalSpent = { innovation: 0, platform: 0 };
-
-      projects.forEach(project => {
-        if (project.investors.some(i => i.username === user.username)) {
-          investments.push({
-            id: project.id,
-            name: project.name,
-            type: project.type,
-            price: project.price
-          });
-          if (project.type === 'innovation') {
-            totalSpent.innovation += project.price;
-          } else if (project.type === 'platform') {
-            totalSpent.platform += project.price;
-          }
-        }
-      });
+      const investments = userInvestments.get(user.username) || [];
+      const totalSpent = investments.reduce((acc, inv) => {
+        if (inv.type === 'innovation') acc.innovation += inv.price;
+        else if (inv.type === 'platform') acc.platform += inv.price;
+        return acc;
+      }, { innovation: 0, platform: 0 });
 
       return {
         username: user.username,
