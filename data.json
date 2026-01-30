@@ -8,6 +8,15 @@
       "innovationCoin": 500,
       "platformCoin": 400,
       "createdAt": "2026-01-30T11:55:36.799Z"
+    },
+    "xxx": {
+      "username": "xxx",
+      "nickName": "xxx",
+      "avatarEmoji": "🦈",
+      "avatarBg": "linear-gradient(135deg, #1abc9c, #16a085)",
+      "innovationCoin": 130,
+      "platformCoin": 400,
+      "createdAt": "2026-01-30T16:19:35.149Z"
     }
   },
   "projects": [
@@ -19,7 +28,14 @@
       "icon": "🤖",
       "desc": "AI 驱动的项目管理新体验",
       "link": "https://bytedance.larkoffice.com/wiki/CoyrwVqKqiQO4NkmkdXc7l0Yn9V",
-      "investors": []
+      "investors": [
+        {
+          "username": "xxx",
+          "nickName": "xxx",
+          "avatarEmoji": "🦈",
+          "avatarBg": "linear-gradient(135deg, #1abc9c, #16a085)"
+        }
+      ]
     },
     {
       "id": 2,
@@ -29,7 +45,14 @@
       "icon": "✅",
       "desc": "智能任务管理与自动化",
       "link": "https://bytedance.larkoffice.com/wiki/H8l9w7bw2i8dXgkPNOOcX1EInmQ",
-      "investors": []
+      "investors": [
+        {
+          "username": "xxx",
+          "nickName": "xxx",
+          "avatarEmoji": "🦈",
+          "avatarBg": "linear-gradient(135deg, #1abc9c, #16a085)"
+        }
+      ]
     },
     {
       "id": 3,
@@ -39,7 +62,14 @@
       "icon": "💼",
       "desc": "打通 B2B 企业从线索到回款的端到端价值链",
       "link": "https://bytedance.larkoffice.com/wiki/SMCQwNkGtiqamrki8Q5cC2qhnwR",
-      "investors": []
+      "investors": [
+        {
+          "username": "xxx",
+          "nickName": "xxx",
+          "avatarEmoji": "🦈",
+          "avatarBg": "linear-gradient(135deg, #1abc9c, #16a085)"
+        }
+      ]
     },
     {
       "id": 4,

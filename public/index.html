@@ -1293,7 +1293,7 @@
                     <div class="ranking-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal'}">${i + 1}</div>
                     <div class="ranking-info">
                         <div class="ranking-name">${p.name}</div>
-                        <div class="ranking-desc">${p.desc}</div>
+                        <div class="ranking-desc">💎 ${p.price} 创新币 · ${p.desc}</div>
                     </div>
                     <div class="ranking-stats">
                         <div class="ranking-count innovation">${p.count}</div>
@@ -1311,7 +1311,7 @@
                     <div class="ranking-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal'}">${i + 1}</div>
                     <div class="ranking-info">
                         <div class="ranking-name">${p.name}</div>
-                        <div class="ranking-desc">${p.desc}</div>
+                        <div class="ranking-desc">🪙 ${p.price} 升级币 · ${p.desc}</div>
                     </div>
                     <div class="ranking-stats">
                         <div class="ranking-count platform">${p.count}</div>
@@ -1332,6 +1332,10 @@
             document.getElementById('projectDesc').value = project.desc || '';
             document.getElementById('projectLink').value = project.link || '';
             document.getElementById('formTitle').textContent = '✏️ 编辑项目';
+
+            // 滚动到编辑框
+            document.getElementById('projectName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('projectName').focus();
         }
 
         function resetForm() {
