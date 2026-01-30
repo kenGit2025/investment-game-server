@@ -436,6 +436,95 @@
             .projects-grid { grid-template-columns: 1fr; }
             .main { padding: 20px; }
         }
+
+        /* 管理员界面样式 */
+        .admin-page { flex-direction: column; }
+        .admin-header {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            padding: 16px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .admin-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .ranking-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .ranking-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ranking-title.innovation { color: #9b59b6; }
+        .ranking-title.platform { color: #2ecc71; }
+        .ranking-list { list-style: none; }
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+        .ranking-item:hover { background: rgba(255,255,255,0.08); }
+        .ranking-rank {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 16px;
+            font-size: 14px;
+        }
+        .ranking-rank.gold { background: linear-gradient(135deg, #f1c40f, #f39c12); }
+        .ranking-rank.silver { background: linear-gradient(135deg, #bdc3c7, #95a5a6); }
+        .ranking-rank.bronze { background: linear-gradient(135deg, #e67e22, #d35400); }
+        .ranking-rank.normal { background: rgba(255,255,255,0.1); }
+        .ranking-info { flex: 1; }
+        .ranking-name { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+        .ranking-desc { font-size: 12px; color: #8892b0; }
+        .ranking-stats {
+            text-align: right;
+        }
+        .ranking-count {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .ranking-count.innovation { color: #9b59b6; }
+        .ranking-count.platform { color: #2ecc71; }
+        .ranking-label { font-size: 11px; color: #8892b0; }
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-value { font-size: 32px; font-weight: bold; margin-bottom: 4px; }
+        .stat-value.innovation { color: #9b59b6; }
+        .stat-value.platform { color: #2ecc71; }
+        .stat-value.total { color: #f39c12; }
+        .stat-label { font-size: 13px; color: #8892b0; }
     </style>
 </head>
 <body>
@@ -522,6 +611,34 @@
         </main>
     </div>
 
+    <!-- 管理员页面 -->
+    <div id="adminPage" class="page admin-page">
+        <header class="admin-header">
+            <div class="brand">
+                <span class="brand-icon">👑</span>
+                <span class="brand-name">投资大亨</span>
+                <span class="admin-badge">管理员</span>
+            </div>
+            <button class="logout-btn" onclick="logout()">退出</button>
+        </header>
+
+        <main class="main">
+            <div class="container">
+                <div class="stats-summary" id="statsSummary"></div>
+
+                <div class="ranking-section">
+                    <h3 class="ranking-title innovation">💡 创新业务投资排行</h3>
+                    <ul class="ranking-list" id="innovationRanking"></ul>
+                </div>
+
+                <div class="ranking-section">
+                    <h3 class="ranking-title platform">🏗️ 平台能力升级投资排行</h3>
+                    <ul class="ranking-list" id="platformRanking"></ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
@@ -554,12 +671,21 @@
         let currentUser = null;
         let tempAvatar = null;
         let gameData = null;
+        const ADMIN_USERNAME = 'meegoadmin';
+
+        function isAdmin() {
+            return currentUser && currentUser.username === ADMIN_USERNAME;
+        }
 
         function init() {
             const saved = localStorage.getItem('currentUser');
             if (saved) {
                 currentUser = JSON.parse(saved);
-                loadGame();
+                if (isAdmin()) {
+                    loadAdminData();
+                } else {
+                    loadGame();
+                }
             } else {
                 tempAvatar = randomAvatar();
                 renderAvatar();
@@ -572,7 +698,13 @@
 
             // 定时刷新数据
             setInterval(() => {
-                if (currentUser) loadGame(true);
+                if (currentUser) {
+                    if (isAdmin()) {
+                        loadAdminData(true);
+                    } else {
+                        loadGame(true);
+                    }
+                }
             }, 5000);
         }
 
@@ -633,8 +765,13 @@
                 currentUser = data.user;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
 
-                showToast(data.isNew ? '注册成功，欢迎 ' + username + '！' : '欢迎回来，' + username + '！', 'info');
-                loadGame();
+                if (isAdmin()) {
+                    showToast('欢迎回来，管理员！', 'info');
+                    loadAdminData();
+                } else {
+                    showToast(data.isNew ? '注册成功，欢迎 ' + username + '！' : '欢迎回来，' + username + '！', 'info');
+                    loadGame();
+                }
             } catch (e) {
                 showToast('网络错误，请重试', 'error');
             } finally {
@@ -657,11 +794,19 @@
         function showLogin() {
             document.getElementById('loginPage').classList.add('active');
             document.getElementById('gamePage').classList.remove('active');
+            document.getElementById('adminPage').classList.remove('active');
         }
 
         function showGame() {
             document.getElementById('loginPage').classList.remove('active');
             document.getElementById('gamePage').classList.add('active');
+            document.getElementById('adminPage').classList.remove('active');
+        }
+
+        function showAdmin() {
+            document.getElementById('loginPage').classList.remove('active');
+            document.getElementById('gamePage').classList.remove('active');
+            document.getElementById('adminPage').classList.add('active');
         }
 
         async function loadGame(silent = false) {
@@ -846,6 +991,95 @@
             } finally {
                 hideLoading();
             }
+        }
+
+        // 管理员功能
+        async function loadAdminData(silent = false) {
+            if (!silent) showLoading();
+            try {
+                const res = await fetch(API_BASE + '/api/game?username=' + encodeURIComponent(currentUser.username));
+                const data = await res.json();
+
+                if (data.error) {
+                    // 管理员不需要注册，直接使用数据
+                }
+
+                gameData = data;
+                renderAdmin();
+                showAdmin();
+            } catch (e) {
+                if (!silent) showToast('加载失败，请重试', 'error');
+            } finally {
+                if (!silent) hideLoading();
+            }
+        }
+
+        function renderAdmin() {
+            if (!gameData || !gameData.projects) return;
+
+            const projects = gameData.projects;
+
+            // 统计数据
+            const innovationProjects = projects.filter(p => p.type === 'innovation');
+            const platformProjects = projects.filter(p => p.type === 'platform');
+
+            const innovationInvestors = innovationProjects.reduce((sum, p) => sum + p.investors.length, 0);
+            const platformInvestors = platformProjects.reduce((sum, p) => sum + p.investors.length, 0);
+            const totalInvestors = innovationInvestors + platformInvestors;
+
+            // 渲染统计卡片
+            document.getElementById('statsSummary').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value total">${totalInvestors}</div>
+                    <div class="stat-label">总投资次数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value innovation">${innovationInvestors}</div>
+                    <div class="stat-label">创新业务投资次数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value platform">${platformInvestors}</div>
+                    <div class="stat-label">平台能力升级投资次数</div>
+                </div>
+            `;
+
+            // 渲染创新业务排行
+            const innovationRanked = innovationProjects
+                .map(p => ({ ...p, count: p.investors.length }))
+                .sort((a, b) => b.count - a.count);
+
+            document.getElementById('innovationRanking').innerHTML = innovationRanked.map((p, i) => `
+                <li class="ranking-item">
+                    <div class="ranking-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal'}">${i + 1}</div>
+                    <div class="ranking-info">
+                        <div class="ranking-name">${p.name}</div>
+                        <div class="ranking-desc">${p.desc}</div>
+                    </div>
+                    <div class="ranking-stats">
+                        <div class="ranking-count innovation">${p.count}</div>
+                        <div class="ranking-label">人投资</div>
+                    </div>
+                </li>
+            `).join('');
+
+            // 渲染平台能力升级排行
+            const platformRanked = platformProjects
+                .map(p => ({ ...p, count: p.investors.length }))
+                .sort((a, b) => b.count - a.count);
+
+            document.getElementById('platformRanking').innerHTML = platformRanked.map((p, i) => `
+                <li class="ranking-item">
+                    <div class="ranking-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal'}">${i + 1}</div>
+                    <div class="ranking-info">
+                        <div class="ranking-name">${p.name}</div>
+                        <div class="ranking-desc">${p.desc}</div>
+                    </div>
+                    <div class="ranking-stats">
+                        <div class="ranking-count platform">${p.count}</div>
+                        <div class="ranking-label">人投资</div>
+                    </div>
+                </li>
+            `).join('');
         }
 
         function showToast(msg, type = '') {

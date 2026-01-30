@@ -83,6 +83,14 @@ app.post('/api/login', (req, res) => {
     return res.status(400).json({ error: '用户名不能为空' });
   }
 
+  // 管理员登录，不创建用户
+  if (username === 'meegoadmin') {
+    return res.json({
+      user: { username: 'meegoadmin', nickName: '管理员', isAdmin: true },
+      isNew: false
+    });
+  }
+
   const data = readData();
   let user = data.users[username];
   let isNew = false;
@@ -115,6 +123,24 @@ app.get('/api/game', (req, res) => {
   }
 
   const data = readData();
+
+  // 管理员可以直接获取数据，不需要先注册
+  if (username === 'meegoadmin') {
+    const otherUsers = Object.values(data.users)
+      .map(u => ({
+        username: u.username,
+        nickName: u.nickName,
+        avatarEmoji: u.avatarEmoji,
+        avatarBg: u.avatarBg
+      }));
+
+    return res.json({
+      user: { username: 'meegoadmin', nickName: '管理员', isAdmin: true },
+      projects: data.projects,
+      otherUsers
+    });
+  }
+
   const user = data.users[username];
 
   if (!user) {
