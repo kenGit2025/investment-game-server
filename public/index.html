@@ -785,10 +785,6 @@
                                 <input type="text" class="form-input" id="projectLink" placeholder="输入项目链接（可选）">
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label>项目描述</label>
-                            <input type="text" class="form-input" id="projectDesc" placeholder="输入项目描述">
-                        </div>
                         <div class="form-actions">
                             <button class="btn-primary" onclick="saveProject()">💾 保存项目</button>
                             <button class="btn-secondary" onclick="resetForm()">🔄 重置</button>
@@ -1119,7 +1115,6 @@
                                 <span class="project-type ${p.type}">${typeLabels[p.type]}</span>
                             </div>
                         </div>
-                        <p class="project-desc">${p.desc}</p>
                         <div class="project-price ${p.type}">
                             ${priceHtml}
                         </div>
@@ -1296,7 +1291,7 @@
                     <div class="ranking-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal'}">${i + 1}</div>
                     <div class="ranking-info">
                         <div class="ranking-name">${p.name}</div>
-                        <div class="ranking-desc">💎 ${p.price} 创新币 · ${p.desc}</div>
+                        <div class="ranking-desc">💎 ${p.price} 创新币</div>
                     </div>
                     <div class="ranking-stats">
                         <div class="ranking-count innovation">${p.count}</div>
@@ -1314,7 +1309,7 @@
                     <div class="ranking-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal'}">${i + 1}</div>
                     <div class="ranking-info">
                         <div class="ranking-name">${p.name}</div>
-                        <div class="ranking-desc">🪙 ${p.price} 升级币 · ${p.desc}</div>
+                        <div class="ranking-desc">🪙 ${p.price} 升级币</div>
                     </div>
                     <div class="ranking-stats">
                         <div class="ranking-count platform">${p.count}</div>
@@ -1332,7 +1327,6 @@
             document.getElementById('projectName').value = project.name;
             document.getElementById('projectType').value = project.type;
             document.getElementById('projectPrice').value = project.price;
-            document.getElementById('projectDesc').value = project.desc || '';
             document.getElementById('projectLink').value = project.link || '';
             document.getElementById('formTitle').textContent = '✏️ 编辑项目';
 
@@ -1346,7 +1340,6 @@
             document.getElementById('projectName').value = '';
             document.getElementById('projectType').value = 'innovation';
             document.getElementById('projectPrice').value = '';
-            document.getElementById('projectDesc').value = '';
             document.getElementById('projectLink').value = '';
             document.getElementById('formTitle').textContent = '➕ 添加新项目';
         }
@@ -1380,7 +1373,6 @@
             const name = document.getElementById('projectName').value.trim();
             const type = document.getElementById('projectType').value;
             const price = document.getElementById('projectPrice').value;
-            const desc = document.getElementById('projectDesc').value.trim();
             const link = document.getElementById('projectLink').value.trim();
 
             if (!name) {
@@ -1396,7 +1388,7 @@
                 const res = await fetch(url, {
                     method,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, type, price, desc, link })
+                    body: JSON.stringify({ name, type, price, link })
                 });
 
                 const data = await res.json();
