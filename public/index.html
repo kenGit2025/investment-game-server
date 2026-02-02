@@ -801,6 +801,22 @@
                 <!-- 投资排行 -->
                 <div id="adminRanking" class="admin-content">
                     <div class="stats-summary" id="statsSummary"></div>
+                    <div class="filter-bar" style="margin-bottom: 20px;">
+                        <div class="filter-group">
+                            <span class="filter-label">排序方式：</span>
+                            <select class="filter-select" id="rankingSortType" onchange="renderRanking()">
+                                <option value="investors">按投资人数</option>
+                                <option value="price">按项目价格</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <span class="filter-label">排序顺序：</span>
+                            <select class="filter-select" id="rankingSortOrder" onchange="renderRanking()">
+                                <option value="desc">从高到低</option>
+                                <option value="asc">从低到高</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="ranking-section">
                         <h3 class="ranking-title innovation">💡 创新业务投资排行</h3>
                         <ul class="ranking-list" id="innovationRanking"></ul>
@@ -1324,9 +1340,28 @@
                 </div>
             `;
 
+            // 获取排序设置
+            const sortType = document.getElementById('rankingSortType')?.value || 'investors';
+            const sortOrder = document.getElementById('rankingSortOrder')?.value || 'desc';
+
+            // 排序函数
+            const sortFn = (a, b) => {
+                let valA, valB;
+                if (sortType === 'investors') {
+                    valA = a.count;
+                    valB = b.count;
+                } else {
+                    valA = a.price;
+                    valB = b.price;
+                }
+                return sortOrder === 'desc' ? valB - valA : valA - valB;
+            };
+
+            const sortLabel = sortType === 'investors' ? '投资人数' : '项目价格';
+
             const innovationRanked = innovationProjects
                 .map(p => ({ ...p, count: p.investors.length }))
-                .sort((a, b) => b.count - a.count);
+                .sort(sortFn);
 
             document.getElementById('innovationRanking').innerHTML = innovationRanked.map((p, i) => `
                 <li class="ranking-item">
@@ -1344,7 +1379,7 @@
 
             const platformRanked = platformProjects
                 .map(p => ({ ...p, count: p.investors.length }))
-                .sort((a, b) => b.count - a.count);
+                .sort(sortFn);
 
             document.getElementById('platformRanking').innerHTML = platformRanked.map((p, i) => `
                 <li class="ranking-item">
