@@ -53,6 +53,14 @@ const projectSchema = new mongoose.Schema({
 // 创建复合索引
 projectSchema.index({ 'investors.username': 1 });
 
+// 系统配置模型
+const settingsSchema = new mongoose.Schema({
+  key: { type: String, required: true, unique: true },
+  value: mongoose.Schema.Types.Mixed
+});
+
+const Settings = mongoose.model('Settings', settingsSchema);
+
 const User = mongoose.model('User', userSchema);
 const Project = mongoose.model('Project', projectSchema);
 
@@ -97,6 +105,22 @@ const defaultProjects = [
 
 const defaultCoins = { innovationCoin: 500, platformCoin: 400 };
 
+// 获取初始货币配置
+async function getInitialCoins() {
+  try {
+    const setting = await Settings.findOne({ key: 'initialCoins' }).lean();
+    if (setting && setting.value) {
+      return {
+        innovationCoin: setting.value.innovationCoin ?? defaultCoins.innovationCoin,
+        platformCoin: setting.value.platformCoin ?? defaultCoins.platformCoin
+      };
+    }
+  } catch (e) {
+    console.error('获取配置失败:', e);
+  }
+  return defaultCoins;
+}
+
 // 初始化默认项目
 async function initProjects() {
   const count = await Project.countDocuments();
@@ -127,14 +151,17 @@ app.post('/api/login', async (req, res) => {
     let isNew = false;
 
     if (!user) {
+      // 获取配置的初始货币数量
+      const initialCoins = await getInitialCoins();
+
       // 用户不存在，创建新用户
       const newUser = new User({
         username,
         nickName: username,
         avatarEmoji,
         avatarBg,
-        innovationCoin: defaultCoins.innovationCoin,
-        platformCoin: defaultCoins.platformCoin
+        innovationCoin: initialCoins.innovationCoin,
+        platformCoin: initialCoins.platformCoin
       });
       user = await newUser.save();
       user = user.toObject();
@@ -398,6 +425,38 @@ app.get('/api/admin/users', async (req, res) => {
     });
 
     res.json({ users: usersWithInvestments });
+  } catch (e) {
+    res.status(500).json({ error: '服务器错误' });
+  }
+});
+
+// API: 获取系统配置
+app.get('/api/settings', async (req, res) => {
+  try {
+    const initialCoins = await getInitialCoins();
+    res.json({ initialCoins });
+  } catch (e) {
+    res.status(500).json({ error: '服务器错误' });
+  }
+});
+
+// API: 更新系统配置（管理员）
+app.put('/api/settings', async (req, res) => {
+  try {
+    const { initialCoins } = req.body;
+
+    if (initialCoins) {
+      await Settings.findOneAndUpdate(
+        { key: 'initialCoins' },
+        { value: {
+          innovationCoin: parseInt(initialCoins.innovationCoin) || 500,
+          platformCoin: parseInt(initialCoins.platformCoin) || 400
+        }},
+        { upsert: true, new: true }
+      );
+    }
+
+    res.json({ success: true, message: '配置已更新' });
   } catch (e) {
     res.status(500).json({ error: '服务器错误' });
   }
