@@ -1,8 +1,15 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: '*' }
+});
+
 const PORT = process.env.PORT || 3000;
 
 // MongoDB 连接（优化连接池配置）
@@ -224,6 +231,7 @@ app.post('/api/invest', async (req, res) => {
     ]);
 
     res.json({ success: true, user: updatedUser, project: updatedProject });
+    broadcastUpdate(); // 广播更新
   } catch (e) {
     res.status(500).json({ error: '服务器错误' });
   }
@@ -266,6 +274,7 @@ app.post('/api/cancel', async (req, res) => {
     }
 
     res.json({ success: true, user: updatedUser, project: updatedProject });
+    broadcastUpdate(); // 广播更新
   } catch (e) {
     res.status(500).json({ error: '服务器错误' });
   }
@@ -278,6 +287,7 @@ app.post('/api/reset', async (req, res) => {
     await Project.deleteMany({});
     await Project.insertMany(defaultProjects);
     res.json({ success: true, message: '游戏已重置' });
+    broadcastUpdate(); // 广播更新
   } catch (e) {
     res.status(500).json({ error: '服务器错误' });
   }
@@ -308,6 +318,7 @@ app.post('/api/project', async (req, res) => {
 
     await newProject.save();
     res.json({ success: true, project: newProject });
+    broadcastUpdate(); // 广播更新
   } catch (e) {
     res.status(500).json({ error: '服务器错误' });
   }
@@ -335,6 +346,7 @@ app.put('/api/project/:id', async (req, res) => {
 
     await project.save();
     res.json({ success: true, project });
+    broadcastUpdate(); // 广播更新
   } catch (e) {
     res.status(500).json({ error: '服务器错误' });
   }
@@ -391,14 +403,35 @@ app.get('/api/admin/users', async (req, res) => {
   }
 });
 
+// WebSocket 连接处理
+io.on('connection', (socket) => {
+  console.log('📱 用户连接:', socket.id);
+
+  socket.on('disconnect', () => {
+    console.log('👋 用户断开:', socket.id);
+  });
+});
+
+// 广播数据更新
+async function broadcastUpdate() {
+  try {
+    const projects = await Project.find().sort({ id: 1 }).lean();
+    const users = await User.find().select('username nickName avatarEmoji avatarBg').lean();
+    io.emit('dataUpdate', { projects, users });
+  } catch (e) {
+    console.error('广播失败:', e);
+  }
+}
+
 // 启动服务器
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`
   ╔═══════════════════════════════════════╗
   ║                                       ║
   ║   💰 投资大亨服务器已启动！           ║
   ║                                       ║
   ║   本地访问: http://localhost:${PORT}      ║
+  ║   WebSocket: 已启用 ✅                ║
   ║                                       ║
   ╚═══════════════════════════════════════╝
   `);
