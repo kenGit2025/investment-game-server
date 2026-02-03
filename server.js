@@ -195,7 +195,7 @@ app.get('/api/game', async (req, res) => {
     }
 
     // 并行查询当前用户、项目、其他用户
-    const [user, projects, otherUsers] = await Promise.all([
+    let [user, projects, otherUsers] = await Promise.all([
       User.findOne({ username }).lean(),
       Project.find().sort({ id: 1 }).lean(),
       User.find({ username: { $ne: username } }).select('username nickName avatarEmoji avatarBg').lean()
@@ -203,6 +203,13 @@ app.get('/api/game', async (req, res) => {
 
     if (!user) {
       return res.status(404).json({ error: '用户不存在' });
+    }
+
+    // 兼容旧数据：如果用户没有 coin 字段，迁移数据
+    if (user.coin === undefined || user.coin === null) {
+      const migratedCoin = ((user.innovationCoin || 0) + (user.platformCoin || 0)) || 900;
+      await User.updateOne({ username }, { $set: { coin: migratedCoin } });
+      user.coin = migratedCoin;
     }
 
     res.json({ user, projects, otherUsers });
@@ -240,8 +247,16 @@ app.post('/api/invest', async (req, res) => {
       return res.status(400).json({ error: `投资金额不能低于起投金额 ${project.price}` });
     }
 
-    if (user.coin < investAmount) {
+    // 兼容旧数据：如果没有 coin 字段，使用旧字段的和或默认值
+    const userCoin = user.coin ?? ((user.innovationCoin || 0) + (user.platformCoin || 0)) || 900;
+    if (userCoin < investAmount) {
       return res.status(400).json({ error: '余额不足' });
+    }
+
+    // 如果用户没有 coin 字段，先迁移数据
+    if (user.coin === undefined || user.coin === null) {
+      const migratedCoin = ((user.innovationCoin || 0) + (user.platformCoin || 0)) || 900;
+      await User.updateOne({ username }, { $set: { coin: migratedCoin } });
     }
 
     // 并行更新用户和项目
@@ -271,7 +286,10 @@ app.post('/api/cancel', async (req, res) => {
   try {
     const { username, projectId } = req.body;
 
-    const project = await Project.findOne({ id: projectId }).lean();
+    const [user, project] = await Promise.all([
+      User.findOne({ username }).lean(),
+      Project.findOne({ id: projectId }).lean()
+    ]);
 
     if (!project) {
       return res.status(400).json({ error: '无效请求' });
@@ -285,6 +303,12 @@ app.post('/api/cancel', async (req, res) => {
 
     // 退还实际投资的金额（兼容旧数据，如果没有 amount 字段则退还项目价格）
     const refundAmount = investorRecord.amount || project.price;
+
+    // 如果用户没有 coin 字段，先迁移数据
+    if (user && (user.coin === undefined || user.coin === null)) {
+      const migratedCoin = ((user.innovationCoin || 0) + (user.platformCoin || 0)) || 900;
+      await User.updateOne({ username }, { $set: { coin: migratedCoin } });
+    }
 
     // 并行更新用户和项目
     const [updatedUser, updatedProject] = await Promise.all([
@@ -307,7 +331,8 @@ app.post('/api/cancel', async (req, res) => {
     res.json({ success: true, user: updatedUser, project: updatedProject, refundAmount });
     broadcastUpdate(); // 广播更新
   } catch (e) {
-    res.status(500).json({ error: '服务器错误' });
+    console.error('取消投资错误:', e);
+    res.status(500).json({ error: '服务器错误: ' + e.message });
   }
 });
 
