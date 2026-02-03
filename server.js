@@ -248,7 +248,7 @@ app.post('/api/invest', async (req, res) => {
     }
 
     // 兼容旧数据：如果没有 coin 字段，使用旧字段的和或默认值
-    const userCoin = user.coin ?? ((user.innovationCoin || 0) + (user.platformCoin || 0)) || 900;
+    const userCoin = user.coin != null ? user.coin : (((user.innovationCoin || 0) + (user.platformCoin || 0)) || 900);
     if (userCoin < investAmount) {
       return res.status(400).json({ error: '余额不足' });
     }
