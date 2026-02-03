@@ -978,7 +978,9 @@
             // 投资金额输入监听
             document.getElementById('investModalAmount').addEventListener('input', checkInvestAmount);
             document.getElementById('investModalAmount').addEventListener('keypress', e => {
-                if (e.key === 'Enter' && !document.getElementById('investModalConfirm').disabled) confirmInvest();
+                if (e.key === 'Enter' && pendingInvestProject && !document.getElementById('investModalConfirm').disabled) {
+                    confirmInvest();
+                }
             });
 
             // 初始化 WebSocket 连接
@@ -1294,17 +1296,26 @@
             const btn = document.getElementById('investModalConfirm');
             const amount = parseInt(input.value) || 0;
 
-            if (!pendingInvestProject) return;
+            if (!pendingInvestProject || !pendingInvestProject.id) {
+                btn.disabled = true;
+                return;
+            }
 
-            const isValid = amount >= pendingInvestProject.price && amount <= currentUser.coin;
+            const userCoin = currentUser.coin ?? 0;
+            const isValid = amount >= pendingInvestProject.price && amount <= userCoin;
             btn.disabled = !isValid;
         }
 
         async function confirmInvest() {
-            if (!pendingInvestProject) return;
+            const project = pendingInvestProject; // 先保存项目引用
+            if (!project || !project.id) {
+                console.error('项目数据无效:', project);
+                showToast('项目数据无效，请重试', 'error');
+                closeInvestModal();
+                return;
+            }
 
             const amount = parseInt(document.getElementById('investModalAmount').value) || 0;
-            const project = pendingInvestProject; // 先保存项目引用
 
             if (amount < project.price) {
                 showToast(`投资金额不能低于起投金额 ${project.price}`, 'warning');
