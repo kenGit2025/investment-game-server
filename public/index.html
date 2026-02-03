@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- v2.2 - 管理员编辑取消按钮 -->
+<!-- v2.3 - 我的投资查看功能 -->
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -393,6 +393,67 @@
         .invest-modal-btn.cancel:hover { background: rgba(255,255,255,0.15); }
         .invest-amount { font-size: 11px; color: #f39c12; margin-left: 4px; }
 
+        /* 我的投资弹窗内容 */
+        .my-invest-summary {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+        }
+        .my-invest-stat {
+            flex: 1;
+            text-align: center;
+        }
+        .my-invest-stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #f39c12;
+        }
+        .my-invest-stat-label {
+            font-size: 12px;
+            color: #8892b0;
+            margin-top: 4px;
+        }
+        .my-invest-list {
+            list-style: none;
+        }
+        .my-invest-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .my-invest-item:hover {
+            background: rgba(255,255,255,0.06);
+        }
+        .my-invest-item-info {
+            flex: 1;
+        }
+        .my-invest-item-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .my-invest-item-type {
+            font-size: 11px;
+            color: #8892b0;
+            margin-top: 2px;
+        }
+        .my-invest-item-amount {
+            font-size: 16px;
+            font-weight: bold;
+            color: #f39c12;
+        }
+        .my-invest-empty {
+            text-align: center;
+            color: #666;
+            padding: 30px;
+            font-style: italic;
+        }
+
         .project-investors {
             border-top: 1px solid rgba(255,255,255,0.1);
             padding-top: 14px;
@@ -751,6 +812,7 @@
                     <div class="user-avatar" id="headerAvatar"></div>
                     <span class="user-name" id="headerName"></span>
                 </div>
+                <button class="logout-btn" style="background:rgba(52,152,219,0.2);border-color:rgba(52,152,219,0.5);color:#3498db;" onclick="showMyInvestments()">📊 我的投资</button>
                 <button class="logout-btn" onclick="logout()">退出</button>
             </div>
         </header>
@@ -903,6 +965,17 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- 我的投资弹窗 -->
+    <div class="invest-modal" id="myInvestModal">
+        <div class="invest-modal-box" style="width:500px;max-height:80vh;overflow-y:auto;">
+            <div class="invest-modal-title">📊 我的投资情况</div>
+            <div id="myInvestContent"></div>
+            <div class="invest-modal-actions" style="margin-top:20px;">
+                <button class="invest-modal-btn cancel" onclick="closeMyInvestModal()" style="flex:none;padding:12px 30px;">关闭</button>
+            </div>
+        </div>
     </div>
 
     <!-- 投资弹窗 -->
@@ -1406,6 +1479,78 @@
                 // 打开投资弹窗
                 openInvestModal(p);
             }
+        }
+
+        // 我的投资弹窗
+        function showMyInvestments() {
+            if (!gameData || !gameData.projects) return;
+
+            const typeLabels = {
+                innovation: '💡 创新业务',
+                platform: '🏗️ 平台能力升级',
+                unknown: '❓ 未知项目'
+            };
+
+            // 找出用户投资的所有项目
+            const myInvestments = [];
+            gameData.projects.forEach(p => {
+                const investorRecord = p.investors.find(i => i.username === currentUser.username);
+                if (investorRecord) {
+                    myInvestments.push({
+                        name: p.name,
+                        type: p.type,
+                        typeLabel: typeLabels[p.type] || '未知',
+                        amount: investorRecord.amount || p.price,
+                        link: p.link
+                    });
+                }
+            });
+
+            const totalInvested = myInvestments.reduce((sum, inv) => sum + inv.amount, 0);
+            const projectCount = myInvestments.length;
+
+            let contentHtml = `
+                <div class="my-invest-summary">
+                    <div class="my-invest-stat">
+                        <div class="my-invest-stat-value">${projectCount}</div>
+                        <div class="my-invest-stat-label">投资项目数</div>
+                    </div>
+                    <div class="my-invest-stat">
+                        <div class="my-invest-stat-value">${totalInvested}</div>
+                        <div class="my-invest-stat-label">已投资金额</div>
+                    </div>
+                    <div class="my-invest-stat">
+                        <div class="my-invest-stat-value">${currentUser.coin}</div>
+                        <div class="my-invest-stat-label">剩余投资币</div>
+                    </div>
+                </div>
+            `;
+
+            if (myInvestments.length === 0) {
+                contentHtml += '<div class="my-invest-empty">暂无投资记录，快去投资心仪的项目吧！</div>';
+            } else {
+                contentHtml += '<ul class="my-invest-list">';
+                myInvestments.forEach(inv => {
+                    const linkHtml = inv.link ? `<a href="${inv.link}" target="_blank" style="color:#3498db;font-size:11px;margin-left:8px;">查看详情</a>` : '';
+                    contentHtml += `
+                        <li class="my-invest-item">
+                            <div class="my-invest-item-info">
+                                <div class="my-invest-item-name">${inv.name}${linkHtml}</div>
+                                <div class="my-invest-item-type">${inv.typeLabel}</div>
+                            </div>
+                            <div class="my-invest-item-amount">${inv.amount} 币</div>
+                        </li>
+                    `;
+                });
+                contentHtml += '</ul>';
+            }
+
+            document.getElementById('myInvestContent').innerHTML = contentHtml;
+            document.getElementById('myInvestModal').classList.add('show');
+        }
+
+        function closeMyInvestModal() {
+            document.getElementById('myInvestModal').classList.remove('show');
         }
 
         // 管理员功能
