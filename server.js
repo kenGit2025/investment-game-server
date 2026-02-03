@@ -372,6 +372,19 @@ app.put('/api/project/:id', async (req, res) => {
   }
 });
 
+// API: 批量设置所有项目价格（管理员）
+app.post('/api/admin/reset-prices', async (req, res) => {
+  try {
+    const { price } = req.body;
+    const newPrice = parseInt(price) || 0;
+    await Project.updateMany({}, { $set: { price: newPrice } });
+    res.json({ success: true, message: '所有项目价格已更新' });
+    broadcastUpdate();
+  } catch (e) {
+    res.status(500).json({ error: '服务器错误' });
+  }
+});
+
 // API: 获取所有用户投资情况（优化：并行查询 + lean）
 app.get('/api/admin/users', async (req, res) => {
   try {
