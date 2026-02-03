@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- v2.1 - 自定义投资金额 -->
+<!-- v2.2 - 管理员编辑取消按钮 -->
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -844,7 +844,7 @@
                         </div>
                         <div class="form-actions">
                             <button class="btn-primary" onclick="saveProject()">💾 保存项目</button>
-                            <button class="btn-secondary" onclick="resetForm()">🔄 重置</button>
+                            <button class="btn-secondary" id="cancelEditBtn" onclick="cancelEdit()" style="display:none;">❌ 取消编辑</button>
                         </div>
                     </div>
                     <div class="project-list-admin" id="projectListAdmin"></div>
@@ -1613,10 +1613,15 @@
             document.getElementById('projectPrice').value = project.price;
             document.getElementById('projectLink').value = project.link || '';
             document.getElementById('formTitle').textContent = '✏️ 编辑项目';
+            document.getElementById('cancelEditBtn').style.display = 'inline-block';
 
             // 滚动到编辑框
             document.getElementById('projectName').scrollIntoView({ behavior: 'smooth', block: 'center' });
             document.getElementById('projectName').focus();
+        }
+
+        function cancelEdit() {
+            resetForm();
         }
 
         function resetForm() {
@@ -1626,6 +1631,7 @@
             document.getElementById('projectPrice').value = '';
             document.getElementById('projectLink').value = '';
             document.getElementById('formTitle').textContent = '➕ 添加新项目';
+            document.getElementById('cancelEditBtn').style.display = 'none';
         }
 
         async function resetAllPrices() {
