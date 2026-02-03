@@ -1304,9 +1304,10 @@
             if (!pendingInvestProject) return;
 
             const amount = parseInt(document.getElementById('investModalAmount').value) || 0;
+            const project = pendingInvestProject; // 先保存项目引用
 
-            if (amount < pendingInvestProject.price) {
-                showToast(`投资金额不能低于起投金额 ${pendingInvestProject.price}`, 'warning');
+            if (amount < project.price) {
+                showToast(`投资金额不能低于起投金额 ${project.price}`, 'warning');
                 return;
             }
 
@@ -1324,7 +1325,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         username: currentUser.username,
-                        projectId: pendingInvestProject.id,
+                        projectId: project.id,
                         amount: amount
                     })
                 });
@@ -1336,7 +1337,7 @@
                     return;
                 }
 
-                showToast(`🎉 成功投资 ${pendingInvestProject.name}，投入 ${amount} 投资币！`);
+                showToast(`🎉 成功投资 ${project.name}，投入 ${amount} 投资币！`);
                 loadGame(true);
             } catch (e) {
                 console.error('投资错误:', e);
