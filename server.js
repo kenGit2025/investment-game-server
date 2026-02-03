@@ -299,12 +299,13 @@ app.post('/api/cancel', async (req, res) => {
   }
 });
 
-// API: 重置游戏
+// API: 重置游戏（只清空用户和投资记录，保留项目配置）
 app.post('/api/reset', async (req, res) => {
   try {
+    // 清空所有用户
     await User.deleteMany({});
-    await Project.deleteMany({});
-    await Project.insertMany(defaultProjects);
+    // 清空所有项目的投资者列表，保留项目本身
+    await Project.updateMany({}, { $set: { investors: [] } });
     res.json({ success: true, message: '游戏已重置' });
     broadcastUpdate(); // 广播更新
   } catch (e) {
