@@ -334,6 +334,60 @@
         .project-price.innovation { color: #9b59b6; }
         .project-price.platform { color: #2ecc71; }
         .project-price.unknown { color: #95a5a6; }
+        .project-price-label { font-size: 12px; color: #8892b0; margin-bottom: 4px; }
+
+        /* 投资弹窗 */
+        .invest-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        .invest-modal.show { display: flex; }
+        .invest-modal-box {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 32px;
+            width: 400px;
+            max-width: 90%;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .invest-modal-title { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
+        .invest-modal-project { font-size: 14px; color: #8892b0; margin-bottom: 20px; }
+        .invest-modal-min { font-size: 13px; color: #f39c12; margin-bottom: 16px; }
+        .invest-modal-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            font-size: 18px;
+            color: #fff;
+            text-align: center;
+            outline: none;
+            margin-bottom: 20px;
+        }
+        .invest-modal-input:focus { border-color: #f39c12; }
+        .invest-modal-balance { font-size: 13px; color: #8892b0; margin-bottom: 20px; text-align: center; }
+        .invest-modal-actions { display: flex; gap: 12px; }
+        .invest-modal-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .invest-modal-btn.confirm { background: linear-gradient(135deg, #f39c12, #e67e22); color: white; }
+        .invest-modal-btn.confirm:hover { box-shadow: 0 5px 20px rgba(243,156,18,0.4); }
+        .invest-modal-btn.confirm:disabled { background: rgba(255,255,255,0.1); color: #666; cursor: not-allowed; }
+        .invest-modal-btn.cancel { background: rgba(255,255,255,0.1); color: #aaa; }
+        .invest-modal-btn.cancel:hover { background: rgba(255,255,255,0.15); }
+        .invest-amount { font-size: 11px; color: #f39c12; margin-left: 4px; }
 
         .project-investors {
             border-top: 1px solid rgba(255,255,255,0.1);
@@ -822,7 +876,8 @@
                             <span class="filter-label">排序方式：</span>
                             <select class="filter-select" id="rankingSortType" onchange="renderRanking()">
                                 <option value="investors">按投资人数</option>
-                                <option value="price">按项目价格</option>
+                                <option value="totalAmount">按获投金额</option>
+                                <option value="price">按起投金额</option>
                             </select>
                         </div>
                         <div class="filter-group">
@@ -844,6 +899,21 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- 投资弹窗 -->
+    <div class="invest-modal" id="investModal">
+        <div class="invest-modal-box">
+            <div class="invest-modal-title">💰 投资项目</div>
+            <div class="invest-modal-project" id="investModalProject"></div>
+            <div class="invest-modal-min" id="investModalMin"></div>
+            <input type="number" class="invest-modal-input" id="investModalAmount" placeholder="输入投资金额" min="0">
+            <div class="invest-modal-balance" id="investModalBalance"></div>
+            <div class="invest-modal-actions">
+                <button class="invest-modal-btn cancel" onclick="closeInvestModal()">取消</button>
+                <button class="invest-modal-btn confirm" id="investModalConfirm" onclick="confirmInvest()">确认投资</button>
+            </div>
+        </div>
     </div>
 
     <!-- Toast -->
@@ -903,6 +973,12 @@
 
             document.getElementById('usernameInput').addEventListener('keypress', e => {
                 if (e.key === 'Enter' && !document.getElementById('loginBtn').disabled) login();
+            });
+
+            // 投资金额输入监听
+            document.getElementById('investModalAmount').addEventListener('input', checkInvestAmount);
+            document.getElementById('investModalAmount').addEventListener('keypress', e => {
+                if (e.key === 'Enter' && !document.getElementById('investModalConfirm').disabled) confirmInvest();
             });
 
             // 初始化 WebSocket 连接
@@ -1153,13 +1229,14 @@
                         <div class="mini-investor ${i.username === currentUser.username ? 'me' : ''}">
                             <div class="mini-avatar" style="background:${i.avatarBg}">${i.avatarEmoji}</div>
                             <span>${i.nickName}</span>
+                            ${i.amount ? `<span class="invest-amount">(${i.amount}币)</span>` : ''}
                         </div>
                     `).join('')
                     : '<span class="no-investor-text">暂无投资，快来抢先！</span>';
 
                 const priceHtml = isUnknown
                     ? '敬请期待'
-                    : `💰 ${p.price} 投资币`;
+                    : `<div class="project-price-label">起投金额</div>💰 ${p.price} 投资币`;
 
                 const linkHtml = p.link
                     ? `<a href="${p.link}" target="_blank" class="project-link" onclick="event.stopPropagation()">📄 查看详情</a>`
@@ -1189,16 +1266,95 @@
             }).join('');
         }
 
-        async function clickProject(id) {
+        let pendingInvestProject = null;
+
+        function openInvestModal(project) {
+            pendingInvestProject = project;
+            document.getElementById('investModalProject').textContent = project.name;
+            document.getElementById('investModalMin').textContent = `起投金额：${project.price} 投资币`;
+            document.getElementById('investModalBalance').textContent = `当前余额：${currentUser.coin} 投资币`;
+
+            const input = document.getElementById('investModalAmount');
+            input.value = project.price;
+            input.min = project.price;
+
+            checkInvestAmount();
+            document.getElementById('investModal').classList.add('show');
+            input.focus();
+            input.select();
+        }
+
+        function closeInvestModal() {
+            document.getElementById('investModal').classList.remove('show');
+            pendingInvestProject = null;
+        }
+
+        function checkInvestAmount() {
+            const input = document.getElementById('investModalAmount');
+            const btn = document.getElementById('investModalConfirm');
+            const amount = parseInt(input.value) || 0;
+
+            if (!pendingInvestProject) return;
+
+            const isValid = amount >= pendingInvestProject.price && amount <= currentUser.coin;
+            btn.disabled = !isValid;
+        }
+
+        async function confirmInvest() {
+            if (!pendingInvestProject) return;
+
+            const amount = parseInt(document.getElementById('investModalAmount').value) || 0;
+
+            if (amount < pendingInvestProject.price) {
+                showToast(`投资金额不能低于起投金额 ${pendingInvestProject.price}`, 'warning');
+                return;
+            }
+
+            if (amount > currentUser.coin) {
+                showToast('余额不足', 'warning');
+                return;
+            }
+
+            closeInvestModal();
+            showLoading();
+
+            try {
+                const res = await fetch(API_BASE + '/api/invest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser.username,
+                        projectId: pendingInvestProject.id,
+                        amount: amount
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.error) {
+                    showToast(data.error, 'warning');
+                    return;
+                }
+
+                showToast(`🎉 成功投资 ${pendingInvestProject.name}，投入 ${amount} 投资币！`);
+                loadGame(true);
+            } catch (e) {
+                showToast('操作失败，请重试', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function cancelInvestment(id) {
             const p = gameData.projects.find(x => x.id === id);
             if (!p) return;
 
-            const invested = p.investors.some(i => i.username === currentUser.username);
-            const endpoint = invested ? '/api/cancel' : '/api/invest';
+            const investorRecord = p.investors.find(i => i.username === currentUser.username);
+            const refundAmount = investorRecord?.amount || p.price;
 
             showLoading();
             try {
-                const res = await fetch(API_BASE + endpoint, {
+                const res = await fetch(API_BASE + '/api/cancel', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: currentUser.username, projectId: id })
@@ -1211,17 +1367,27 @@
                     return;
                 }
 
-                if (invested) {
-                    showToast('已取消，退还 ' + p.price + ' 投资币', 'info');
-                } else {
-                    showToast('🎉 成功投资 ' + p.name + '！');
-                }
-
+                showToast(`已取消投资，退还 ${data.refundAmount || refundAmount} 投资币`, 'info');
                 loadGame(true);
             } catch (e) {
                 showToast('操作失败，请重试', 'error');
             } finally {
                 hideLoading();
+            }
+        }
+
+        async function clickProject(id) {
+            const p = gameData.projects.find(x => x.id === id);
+            if (!p) return;
+
+            const invested = p.investors.some(i => i.username === currentUser.username);
+
+            if (invested) {
+                // 取消投资
+                cancelInvestment(id);
+            } else {
+                // 打开投资弹窗
+                openInvestModal(p);
             }
         }
 
@@ -1271,15 +1437,18 @@
             const projects = gameData.projects;
             const typeLabels = { innovation: '💡 创新业务', platform: '🏗️ 平台能力升级', unknown: '❓ 未知项目' };
 
-            document.getElementById('projectListAdmin').innerHTML = projects.map(p => `
+            document.getElementById('projectListAdmin').innerHTML = projects.map(p => {
+                const totalInvested = p.investors.reduce((sum, inv) => sum + (inv.amount || p.price), 0);
+                return `
                 <div class="project-item-admin">
                     <div class="project-item-info">
                         <div class="project-item-name">${p.name}</div>
-                        <div class="project-item-meta">${typeLabels[p.type]} · ${p.price} 币 · ${p.investors.length} 人投资</div>
+                        <div class="project-item-meta">${typeLabels[p.type]} · 起投 ${p.price} 币 · ${p.investors.length} 人投资 · 共获投 ${totalInvested} 币</div>
                     </div>
                     <button class="btn-edit" onclick="editProject(${p.id})">✏️ 编辑</button>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function renderUsersList() {
@@ -1294,7 +1463,7 @@
             document.getElementById('usersList').innerHTML = users.map(u => {
                 const investHtml = u.investments.length > 0
                     ? u.investments.map(inv => `
-                        <span class="user-invest-tag ${inv.type}">${inv.name} (${inv.price}币)</span>
+                        <span class="user-invest-tag ${inv.type}">${inv.name} (${inv.amount}币)</span>
                     `).join('')
                     : '<span class="user-no-invest">暂无投资</span>';
 
@@ -1327,18 +1496,26 @@
             const platformInvestors = platformProjects.reduce((sum, p) => sum + p.investors.length, 0);
             const totalInvestors = innovationInvestors + platformInvestors;
 
+            const innovationAmount = innovationProjects.reduce((sum, p) => sum + p.investors.reduce((s, inv) => s + (inv.amount || p.price), 0), 0);
+            const platformAmount = platformProjects.reduce((sum, p) => sum + p.investors.reduce((s, inv) => s + (inv.amount || p.price), 0), 0);
+            const totalAmount = innovationAmount + platformAmount;
+
             document.getElementById('statsSummary').innerHTML = `
                 <div class="stat-card">
                     <div class="stat-value total">${totalInvestors}</div>
                     <div class="stat-label">总投资次数</div>
                 </div>
                 <div class="stat-card">
+                    <div class="stat-value total">${totalAmount}</div>
+                    <div class="stat-label">总投资金额</div>
+                </div>
+                <div class="stat-card">
                     <div class="stat-value innovation">${innovationInvestors}</div>
-                    <div class="stat-label">创新业务投资次数</div>
+                    <div class="stat-label">创新业务 (${innovationAmount}币)</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value platform">${platformInvestors}</div>
-                    <div class="stat-label">平台能力升级投资次数</div>
+                    <div class="stat-label">平台升级 (${platformAmount}币)</div>
                 </div>
             `;
 
@@ -1352,6 +1529,9 @@
                 if (sortType === 'investors') {
                     valA = a.count;
                     valB = b.count;
+                } else if (sortType === 'totalAmount') {
+                    valA = a.totalAmount;
+                    valB = b.totalAmount;
                 } else {
                     valA = a.price;
                     valB = b.price;
@@ -1362,7 +1542,11 @@
             const sortLabel = sortType === 'investors' ? '投资人数' : '项目价格';
 
             const innovationRanked = innovationProjects
-                .map(p => ({ ...p, count: p.investors.length }))
+                .map(p => ({
+                    ...p,
+                    count: p.investors.length,
+                    totalAmount: p.investors.reduce((sum, inv) => sum + (inv.amount || p.price), 0)
+                }))
                 .sort(sortFn);
 
             document.getElementById('innovationRanking').innerHTML = innovationRanked.map((p, i) => `
@@ -1370,7 +1554,7 @@
                     <div class="ranking-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal'}">${i + 1}</div>
                     <div class="ranking-info">
                         <div class="ranking-name">${p.name}</div>
-                        <div class="ranking-desc">💰 ${p.price} 投资币</div>
+                        <div class="ranking-desc">起投 ${p.price} 币 · 共获投 ${p.totalAmount} 币</div>
                     </div>
                     <div class="ranking-stats">
                         <div class="ranking-count innovation">${p.count}</div>
@@ -1380,7 +1564,11 @@
             `).join('');
 
             const platformRanked = platformProjects
-                .map(p => ({ ...p, count: p.investors.length }))
+                .map(p => ({
+                    ...p,
+                    count: p.investors.length,
+                    totalAmount: p.investors.reduce((sum, inv) => sum + (inv.amount || p.price), 0)
+                }))
                 .sort(sortFn);
 
             document.getElementById('platformRanking').innerHTML = platformRanked.map((p, i) => `
@@ -1388,7 +1576,7 @@
                     <div class="ranking-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal'}">${i + 1}</div>
                     <div class="ranking-info">
                         <div class="ranking-name">${p.name}</div>
-                        <div class="ranking-desc">💰 ${p.price} 投资币</div>
+                        <div class="ranking-desc">起投 ${p.price} 币 · 共获投 ${p.totalAmount} 币</div>
                     </div>
                     <div class="ranking-stats">
                         <div class="ranking-count platform">${p.count}</div>

@@ -37,7 +37,7 @@ const projectSchema = new mongoose.Schema({
   id: { type: Number, required: true, unique: true, index: true },
   name: String,
   type: { type: String, index: true },
-  price: Number,
+  price: Number, // 起投金额
   icon: String,
   desc: String,
   link: String,
@@ -45,7 +45,8 @@ const projectSchema = new mongoose.Schema({
     username: { type: String, index: true },
     nickName: String,
     avatarEmoji: String,
-    avatarBg: String
+    avatarBg: String,
+    amount: { type: Number, default: 0 } // 实际投资金额
   }]
 });
 
@@ -213,7 +214,7 @@ app.get('/api/game', async (req, res) => {
 // API: 投资（优化：并行查询 + findOneAndUpdate）
 app.post('/api/invest', async (req, res) => {
   try {
-    const { username, projectId } = req.body;
+    const { username, projectId, amount } = req.body;
 
     // 并行查询用户和项目
     const [user, project] = await Promise.all([
@@ -233,7 +234,13 @@ app.post('/api/invest', async (req, res) => {
       return res.status(400).json({ error: '已经投资过该项目' });
     }
 
-    if (user.coin < project.price) {
+    // 验证投资金额
+    const investAmount = parseInt(amount) || project.price;
+    if (investAmount < project.price) {
+      return res.status(400).json({ error: `投资金额不能低于起投金额 ${project.price}` });
+    }
+
+    if (user.coin < investAmount) {
       return res.status(400).json({ error: '余额不足' });
     }
 
@@ -241,17 +248,17 @@ app.post('/api/invest', async (req, res) => {
     const [updatedUser, updatedProject] = await Promise.all([
       User.findOneAndUpdate(
         { username },
-        { $inc: { coin: -project.price } },
+        { $inc: { coin: -investAmount } },
         { new: true, lean: true }
       ),
       Project.findOneAndUpdate(
         { id: projectId },
-        { $push: { investors: { username: user.username, nickName: user.nickName, avatarEmoji: user.avatarEmoji, avatarBg: user.avatarBg } } },
+        { $push: { investors: { username: user.username, nickName: user.nickName, avatarEmoji: user.avatarEmoji, avatarBg: user.avatarBg, amount: investAmount } } },
         { new: true, lean: true }
       )
     ]);
 
-    res.json({ success: true, user: updatedUser, project: updatedProject });
+    res.json({ success: true, user: updatedUser, project: updatedProject, investAmount });
     broadcastUpdate(); // 广播更新
   } catch (e) {
     res.status(500).json({ error: '服务器错误' });
@@ -269,16 +276,20 @@ app.post('/api/cancel', async (req, res) => {
       return res.status(400).json({ error: '无效请求' });
     }
 
-    const hasInvested = project.investors.some(i => i.username === username);
-    if (!hasInvested) {
+    // 查找用户的投资记录，获取实际投资金额
+    const investorRecord = project.investors.find(i => i.username === username);
+    if (!investorRecord) {
       return res.status(400).json({ error: '未找到投资记录' });
     }
+
+    // 退还实际投资的金额（兼容旧数据，如果没有 amount 字段则退还项目价格）
+    const refundAmount = investorRecord.amount || project.price;
 
     // 并行更新用户和项目
     const [updatedUser, updatedProject] = await Promise.all([
       User.findOneAndUpdate(
         { username },
-        { $inc: { coin: project.price } },
+        { $inc: { coin: refundAmount } },
         { new: true, lean: true }
       ),
       Project.findOneAndUpdate(
@@ -292,7 +303,7 @@ app.post('/api/cancel', async (req, res) => {
       return res.status(400).json({ error: '用户不存在' });
     }
 
-    res.json({ success: true, user: updatedUser, project: updatedProject });
+    res.json({ success: true, user: updatedUser, project: updatedProject, refundAmount });
     broadcastUpdate(); // 广播更新
   } catch (e) {
     res.status(500).json({ error: '服务器错误' });
@@ -391,7 +402,7 @@ app.get('/api/admin/users', async (req, res) => {
     // 并行查询用户和项目
     const [users, projects] = await Promise.all([
       User.find().lean(),
-      Project.find().select('id name type price investors.username').lean()
+      Project.find().select('id name type price investors').lean()
     ]);
 
     // 预构建用户投资映射，避免重复遍历
@@ -401,18 +412,21 @@ app.get('/api/admin/users', async (req, res) => {
         if (!userInvestments.has(investor.username)) {
           userInvestments.set(investor.username, []);
         }
+        // 使用实际投资金额，兼容旧数据
+        const investedAmount = investor.amount || project.price;
         userInvestments.get(investor.username).push({
           id: project.id,
           name: project.name,
           type: project.type,
-          price: project.price
+          price: project.price, // 起投金额
+          amount: investedAmount // 实际投资金额
         });
       });
     });
 
     const usersWithInvestments = users.map(user => {
       const investments = userInvestments.get(user.username) || [];
-      const totalSpent = investments.reduce((sum, inv) => sum + inv.price, 0);
+      const totalSpent = investments.reduce((sum, inv) => sum + inv.amount, 0);
 
       return {
         username: user.username,
