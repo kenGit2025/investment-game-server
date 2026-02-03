@@ -683,13 +683,10 @@
             </div>
             <div class="header-right">
                 <div class="coins-display">
-                    <div class="coin-badge innovation">
-                        <span>💎</span>
-                        <span id="innovationCoin">500</span>
-                    </div>
-                    <div class="coin-badge platform">
-                        <span>🪙</span>
-                        <span id="platformCoin">400</span>
+                    <div class="coin-badge" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+                        <span>💰</span>
+                        <span id="userCoin">900</span>
+                        <span>投资币</span>
                     </div>
                 </div>
                 <div class="user-info">
@@ -803,15 +800,11 @@
                 <div id="adminSettings" class="admin-content">
                     <div class="project-form">
                         <h3 class="form-title">💰 新用户初始货币配置</h3>
-                        <p style="color:#8892b0;font-size:13px;margin-bottom:20px;">设置新注册用户的初始货币数量（不影响已有用户）</p>
+                        <p style="color:#8892b0;font-size:13px;margin-bottom:20px;">设置新注册用户的初始投资币数量（不影响已有用户）</p>
                         <div class="form-row">
                             <div class="form-group">
-                                <label>💎 创新币初始数量</label>
-                                <input type="number" class="form-input" id="settingsInnovationCoin" placeholder="默认 500" min="0">
-                            </div>
-                            <div class="form-group">
-                                <label>🪙 升级币初始数量</label>
-                                <input type="number" class="form-input" id="settingsPlatformCoin" placeholder="默认 400" min="0">
+                                <label>💰 投资币初始数量</label>
+                                <input type="number" class="form-input" id="settingsInitialCoin" placeholder="默认 900" min="0">
                             </div>
                         </div>
                         <div class="form-actions">
@@ -1094,8 +1087,7 @@
             document.getElementById('headerAvatar').style.background = currentUser.avatarBg;
             document.getElementById('headerAvatar').textContent = currentUser.avatarEmoji;
             document.getElementById('headerName').textContent = currentUser.nickName;
-            document.getElementById('innovationCoin').textContent = currentUser.innovationCoin;
-            document.getElementById('platformCoin').textContent = currentUser.platformCoin;
+            document.getElementById('userCoin').textContent = currentUser.coin;
 
             // 其他投资人
             if (gameData.otherUsers.length) {
@@ -1115,16 +1107,6 @@
                 innovation: '💡 创新业务',
                 platform: '🏗️ 平台能力升级',
                 unknown: '❓ 未知项目'
-            };
-            const coinLabels = {
-                innovation: '创新币',
-                platform: '升级币',
-                unknown: ''
-            };
-            const coinIcons = {
-                innovation: '💎',
-                platform: '🪙',
-                unknown: ''
             };
 
             // 获取筛选和排序条件
@@ -1148,11 +1130,7 @@
             document.getElementById('projectsGrid').innerHTML = filteredProjects.map(p => {
                 const invested = p.investors.some(i => i.username === currentUser.username);
                 const isUnknown = p.type === 'unknown';
-                const afford = p.type === 'innovation'
-                    ? currentUser.innovationCoin >= p.price
-                    : p.type === 'platform'
-                    ? currentUser.platformCoin >= p.price
-                    : false;
+                const afford = currentUser.coin >= p.price;
 
                 let btnTxt, btnCls;
                 if (isUnknown) {
@@ -1180,7 +1158,7 @@
 
                 const priceHtml = isUnknown
                     ? '敬请期待'
-                    : `${coinIcons[p.type]} ${p.price} ${coinLabels[p.type]}`;
+                    : `💰 ${p.price} 投资币`;
 
                 const linkHtml = p.link
                     ? `<a href="${p.link}" target="_blank" class="project-link" onclick="event.stopPropagation()">📄 查看详情</a>`
@@ -1233,8 +1211,7 @@
                 }
 
                 if (invested) {
-                    const unit = p.type === 'innovation' ? '创新币' : '升级币';
-                    showToast('已取消，退还 ' + p.price + ' ' + unit, 'info');
+                    showToast('已取消，退还 ' + p.price + ' 投资币', 'info');
                 } else {
                     showToast('🎉 成功投资 ' + p.name + '！');
                 }
@@ -1327,14 +1304,13 @@
                             <div>
                                 <div class="user-card-name">${u.nickName}</div>
                                 <div class="user-card-coins">
-                                    <span class="user-coin innovation">💎 创新币: ${u.innovationCoin}</span>
-                                    <span class="user-coin platform">🪙 升级币: ${u.platformCoin}</span>
+                                    <span class="user-coin" style="color:#f39c12;">💰 投资币: ${u.coin}</span>
                                 </div>
                             </div>
                         </div>
                         <div class="user-investments">${investHtml}</div>
                         <div class="user-spend">
-                            已花费：创新币 ${u.totalSpent.innovation} · 升级币 ${u.totalSpent.platform}
+                            已花费：${u.totalSpent} 投资币
                         </div>
                     </div>
                 `;
@@ -1393,7 +1369,7 @@
                     <div class="ranking-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal'}">${i + 1}</div>
                     <div class="ranking-info">
                         <div class="ranking-name">${p.name}</div>
-                        <div class="ranking-desc">💎 ${p.price} 创新币</div>
+                        <div class="ranking-desc">💰 ${p.price} 投资币</div>
                     </div>
                     <div class="ranking-stats">
                         <div class="ranking-count innovation">${p.count}</div>
@@ -1411,7 +1387,7 @@
                     <div class="ranking-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : 'normal'}">${i + 1}</div>
                     <div class="ranking-info">
                         <div class="ranking-name">${p.name}</div>
-                        <div class="ranking-desc">🪙 ${p.price} 升级币</div>
+                        <div class="ranking-desc">💰 ${p.price} 投资币</div>
                     </div>
                     <div class="ranking-stats">
                         <div class="ranking-count platform">${p.count}</div>
@@ -1521,9 +1497,8 @@
             try {
                 const res = await fetch(API_BASE + '/api/settings');
                 const data = await res.json();
-                if (data.initialCoins) {
-                    document.getElementById('settingsInnovationCoin').value = data.initialCoins.innovationCoin;
-                    document.getElementById('settingsPlatformCoin').value = data.initialCoins.platformCoin;
+                if (data.initialCoin !== undefined) {
+                    document.getElementById('settingsInitialCoin').value = data.initialCoin;
                 }
             } catch (e) {
                 console.error('加载配置失败:', e);
@@ -1532,11 +1507,10 @@
 
         // 保存系统配置
         async function saveSettings() {
-            const innovationCoin = document.getElementById('settingsInnovationCoin').value;
-            const platformCoin = document.getElementById('settingsPlatformCoin').value;
+            const initialCoin = document.getElementById('settingsInitialCoin').value;
 
-            if (!innovationCoin || !platformCoin) {
-                showToast('请填写完整的货币数量', 'warning');
+            if (!initialCoin) {
+                showToast('请填写投资币数量', 'warning');
                 return;
             }
 
@@ -1546,10 +1520,7 @@
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        initialCoins: {
-                            innovationCoin: parseInt(innovationCoin),
-                            platformCoin: parseInt(platformCoin)
-                        }
+                        initialCoin: parseInt(initialCoin)
                     })
                 });
 

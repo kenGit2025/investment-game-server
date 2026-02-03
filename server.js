@@ -29,8 +29,7 @@ const userSchema = new mongoose.Schema({
   nickName: String,
   avatarEmoji: String,
   avatarBg: String,
-  innovationCoin: { type: Number, default: 500 },
-  platformCoin: { type: Number, default: 400 },
+  coin: { type: Number, default: 900 },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -103,22 +102,19 @@ const defaultProjects = [
   { id: 30, name: "智能评论&知识沉淀", type: "unknown", price: 0, icon: "❓", desc: "", link: "https://bytedance.larkoffice.com/wiki/H5eCw1NTHiWN59kCmCecKMfvnDf", investors: [] }
 ];
 
-const defaultCoins = { innovationCoin: 500, platformCoin: 400 };
+const defaultCoin = 900;
 
 // 获取初始货币配置
-async function getInitialCoins() {
+async function getInitialCoin() {
   try {
-    const setting = await Settings.findOne({ key: 'initialCoins' }).lean();
+    const setting = await Settings.findOne({ key: 'initialCoin' }).lean();
     if (setting && setting.value) {
-      return {
-        innovationCoin: setting.value.innovationCoin ?? defaultCoins.innovationCoin,
-        platformCoin: setting.value.platformCoin ?? defaultCoins.platformCoin
-      };
+      return setting.value.coin ?? defaultCoin;
     }
   } catch (e) {
     console.error('获取配置失败:', e);
   }
-  return defaultCoins;
+  return defaultCoin;
 }
 
 // 初始化默认项目
@@ -152,7 +148,7 @@ app.post('/api/login', async (req, res) => {
 
     if (!user) {
       // 获取配置的初始货币数量
-      const initialCoins = await getInitialCoins();
+      const initialCoin = await getInitialCoin();
 
       // 用户不存在，创建新用户
       const newUser = new User({
@@ -160,8 +156,7 @@ app.post('/api/login', async (req, res) => {
         nickName: username,
         avatarEmoji,
         avatarBg,
-        innovationCoin: initialCoins.innovationCoin,
-        platformCoin: initialCoins.platformCoin
+        coin: initialCoin
       });
       user = await newUser.save();
       user = user.toObject();
@@ -238,8 +233,7 @@ app.post('/api/invest', async (req, res) => {
       return res.status(400).json({ error: '已经投资过该项目' });
     }
 
-    const coinType = project.type === 'innovation' ? 'innovationCoin' : 'platformCoin';
-    if (user[coinType] < project.price) {
+    if (user.coin < project.price) {
       return res.status(400).json({ error: '余额不足' });
     }
 
@@ -247,7 +241,7 @@ app.post('/api/invest', async (req, res) => {
     const [updatedUser, updatedProject] = await Promise.all([
       User.findOneAndUpdate(
         { username },
-        { $inc: { [coinType]: -project.price } },
+        { $inc: { coin: -project.price } },
         { new: true, lean: true }
       ),
       Project.findOneAndUpdate(
@@ -280,13 +274,11 @@ app.post('/api/cancel', async (req, res) => {
       return res.status(400).json({ error: '未找到投资记录' });
     }
 
-    const coinType = project.type === 'innovation' ? 'innovationCoin' : 'platformCoin';
-
     // 并行更新用户和项目
     const [updatedUser, updatedProject] = await Promise.all([
       User.findOneAndUpdate(
         { username },
-        { $inc: { [coinType]: project.price } },
+        { $inc: { coin: project.price } },
         { new: true, lean: true }
       ),
       Project.findOneAndUpdate(
@@ -406,19 +398,14 @@ app.get('/api/admin/users', async (req, res) => {
 
     const usersWithInvestments = users.map(user => {
       const investments = userInvestments.get(user.username) || [];
-      const totalSpent = investments.reduce((acc, inv) => {
-        if (inv.type === 'innovation') acc.innovation += inv.price;
-        else if (inv.type === 'platform') acc.platform += inv.price;
-        return acc;
-      }, { innovation: 0, platform: 0 });
+      const totalSpent = investments.reduce((sum, inv) => sum + inv.price, 0);
 
       return {
         username: user.username,
         nickName: user.nickName,
         avatarEmoji: user.avatarEmoji,
         avatarBg: user.avatarBg,
-        innovationCoin: user.innovationCoin,
-        platformCoin: user.platformCoin,
+        coin: user.coin,
         investments,
         totalSpent
       };
@@ -433,8 +420,8 @@ app.get('/api/admin/users', async (req, res) => {
 // API: 获取系统配置
 app.get('/api/settings', async (req, res) => {
   try {
-    const initialCoins = await getInitialCoins();
-    res.json({ initialCoins });
+    const initialCoin = await getInitialCoin();
+    res.json({ initialCoin });
   } catch (e) {
     res.status(500).json({ error: '服务器错误' });
   }
@@ -443,15 +430,12 @@ app.get('/api/settings', async (req, res) => {
 // API: 更新系统配置（管理员）
 app.put('/api/settings', async (req, res) => {
   try {
-    const { initialCoins } = req.body;
+    const { initialCoin } = req.body;
 
-    if (initialCoins) {
+    if (initialCoin !== undefined) {
       await Settings.findOneAndUpdate(
-        { key: 'initialCoins' },
-        { value: {
-          innovationCoin: parseInt(initialCoins.innovationCoin) || 500,
-          platformCoin: parseInt(initialCoins.platformCoin) || 400
-        }},
+        { key: 'initialCoin' },
+        { value: { coin: parseInt(initialCoin) || 900 }},
         { upsert: true, new: true }
       );
     }
