@@ -8,6 +8,15 @@
       "innovationCoin": 110,
       "platformCoin": 400,
       "createdAt": "2026-01-30T16:28:47.293Z"
+    },
+    "testuser": {
+      "username": "testuser",
+      "nickName": "testuser",
+      "avatarEmoji": "🦊",
+      "avatarBg": "linear-gradient(135deg, #e67e22, #d35400)",
+      "innovationCoin": 380,
+      "platformCoin": 400,
+      "createdAt": "2026-02-03T03:32:17.469Z"
     }
   },
   "projects": [
@@ -19,7 +28,14 @@
       "icon": "🤖",
       "desc": "AI 驱动的项目管理新体验",
       "link": "https://bytedance.larkoffice.com/wiki/CoyrwVqKqiQO4NkmkdXc7l0Yn9V",
-      "investors": []
+      "investors": [
+        {
+          "username": "testuser",
+          "nickName": "testuser",
+          "avatarEmoji": "🦊",
+          "avatarBg": "linear-gradient(135deg, #e67e22, #d35400)"
+        }
+      ]
     },
     {
       "id": 2,

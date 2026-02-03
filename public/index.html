@@ -1339,7 +1339,8 @@
                 showToast(`🎉 成功投资 ${pendingInvestProject.name}，投入 ${amount} 投资币！`);
                 loadGame(true);
             } catch (e) {
-                showToast('操作失败，请重试', 'error');
+                console.error('投资错误:', e);
+                showToast('操作失败: ' + (e.message || '请重试'), 'error');
             } finally {
                 hideLoading();
             }

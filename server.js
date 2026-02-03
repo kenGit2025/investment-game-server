@@ -261,7 +261,8 @@ app.post('/api/invest', async (req, res) => {
     res.json({ success: true, user: updatedUser, project: updatedProject, investAmount });
     broadcastUpdate(); // 广播更新
   } catch (e) {
-    res.status(500).json({ error: '服务器错误' });
+    console.error('投资错误:', e);
+    res.status(500).json({ error: '服务器错误: ' + e.message });
   }
 });
 
