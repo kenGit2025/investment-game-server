@@ -837,6 +837,14 @@
                             </select>
                         </div>
                         <div class="filter-group">
+                            <span class="filter-label">投资状态：</span>
+                            <select class="filter-select" id="filterInvestStatus" onchange="renderGame()">
+                                <option value="all">全部</option>
+                                <option value="invested">已投资</option>
+                                <option value="notInvested">未投资</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
                             <span class="filter-label">价格排序：</span>
                             <select class="filter-select" id="sortPrice" onchange="renderGame()">
                                 <option value="default">默认排序</option>
@@ -1267,12 +1275,22 @@
 
             // 获取筛选和排序条件
             const filterType = document.getElementById('filterType')?.value || 'all';
+            const filterInvestStatus = document.getElementById('filterInvestStatus')?.value || 'all';
             const sortPrice = document.getElementById('sortPrice')?.value || 'default';
 
             // 筛选项目
             let filteredProjects = gameData.projects.filter(p => {
-                if (filterType === 'all') return true;
-                return p.type === filterType;
+                // 类型筛选
+                if (filterType !== 'all' && p.type !== filterType) return false;
+
+                // 投资状态筛选
+                if (filterInvestStatus !== 'all') {
+                    const isInvested = p.investors.some(i => i.username === currentUser.username);
+                    if (filterInvestStatus === 'invested' && !isInvested) return false;
+                    if (filterInvestStatus === 'notInvested' && isInvested) return false;
+                }
+
+                return true;
             });
 
             // 排序项目
